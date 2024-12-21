@@ -1,5 +1,7 @@
 {
     "port": 5000,
+    "lat":0,
+    "lon":0,
     "fr24_servers": [
       {
         "name": "Server 1",
