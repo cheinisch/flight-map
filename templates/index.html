@@ -121,52 +121,15 @@
                 </div>        
         </div>
         <script>
-            let map;
-            let markers = {};
-            let selectedSource = 'all';
+            // Karte initialisieren
+            const map = L.map('map').setView([51.1657, 10.4515], 6); // Deutschland-Zentrum
 
-            async function fetchConfig() {
-                console.log('Starte Map-Initialisierung...');
-                const response = await fetch('/config');
-                const config = await response.json();
-                const { lat, lon, sources } = config;
+            // OSM-Karte laden
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(map);
 
-                // Map initialisieren
-                map = L.map('map').setView([51.1657, 10.4515], 6); // Beispiel: Deutschland
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-}).addTo(map);
-console.log('Map sollte nun sichtbar sein.');
-            }
-
-            async function fetchData() {
-                const response = await fetch(`/data?source=${selectedSource}`);
-                const aircraft = await response.json();
-                const list = document.getElementById('aircraft-list');
-                list.innerHTML = '';
-
-                aircraft.forEach(ac => {
-                    const { id, lat, lon, alt, speed, source } = ac;
-
-                    // Marker aktualisieren oder hinzufügen
-                    if (markers[id]) {
-                        markers[id].setLatLng([lat, lon]);
-                    } else {
-                        markers[id] = L.marker([lat, lon]).addTo(map);
-                    }
-
-                    // Flugzeugliste aktualisieren
-                    const item = document.createElement('div');
-                    item.className = 'aircraft';
-                    item.textContent = `ID: ${id}, Höhe: ${alt}m, Speed: ${speed}km/h, Quelle: ${source}`;
-                    item.onclick = () => map.setView([lat, lon], 8);
-                    list.appendChild(item);
-                });
-            }
-
-            fetchConfig();
-           // fetchData();
-            //setInterval(fetchData, 1000);
+            console.log('Karte wurde geladen.');
         </script>
     </body>
 </html>
