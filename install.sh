@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Konfiguration
-REPO_URL="https://github.com/USERNAME/flight-map.git"  # Ersetze mit dem tatsächlichen Repository
+REPO_URL="https://github.com/cheinisch/flight-map.git"  # Ersetze mit dem tatsächlichen Repository
 INSTALL_DIR="/opt/flight-map"
 SERVICE_NAME="flight-map"
 USER="flightmapuser"
