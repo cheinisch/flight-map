@@ -125,19 +125,68 @@
                 </div>        
             </div>          
         </div>
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha384-rjHAa6Hl0Kt9fbH0f7ywX1MCQqL4cUZmtdjXklkYY9pI5I3S0MvIJo/Y2W+bHgsJ" crossorigin=""></script>
+
         <script>
-            // Debugging: Direkt nach dem Laden prüfen
-            console.log('Leaflet verfügbar?', typeof L);
-    
-            // Code nur ausführen, wenn L existiert
-            if (typeof L !== "undefined") {
-                const map = L.map('map').setView([50, 10], 6);
+            let map;
+            let markers = {};
+            let selectedSource = 'all';
+
+            async function fetchConfig() {
+                const response = await fetch('/config');
+                const config = await response.json();
+                const { lat, lon, sources } = config;
+
+                // Map initialisieren
+                map = L.map('map').setView([lat, lon], 8);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19
                 }).addTo(map);
-            } else {
-                console.error('Leaflet konnte nicht geladen werden!');
+
+                // Quellen in Dropdown einfügen
+                const sourceSelect = document.getElementById('sourceSelect');
+                sources.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source.name;
+                    option.textContent = source.name;
+                    sourceSelect.appendChild(option);
+                });
             }
+
+            async function fetchData() {
+                const response = await fetch(`/data?source=${selectedSource}`);
+                const aircraft = await response.json();
+                const list = document.getElementById('aircraft-list');
+                list.innerHTML = '';
+
+                aircraft.forEach(ac => {
+                    const { id, lat, lon, alt, speed, source } = ac;
+
+                    // Marker aktualisieren oder hinzufügen
+                    if (markers[id]) {
+                        markers[id].setLatLng([lat, lon]);
+                    } else {
+                        markers[id] = L.marker([lat, lon]).addTo(map);
+                    }
+
+                    // Flugzeugliste aktualisieren
+                    const item = document.createElement('div');
+                    item.className = 'aircraft';
+                    item.textContent = `ID: ${id}, Höhe: ${alt}m, Speed: ${speed}km/h, Quelle: ${source}`;
+                    item.onclick = () => map.setView([lat, lon], 8);
+                    list.appendChild(item);
+                });
+            }
+
+            document.getElementById('sourceSelect').addEventListener('change', (e) => {
+                selectedSource = e.target.value;
+                fetchData();
+            });
+
+            fetchConfig();
+            fetchData();
+            setInterval(fetchData, 1000);
         </script>
     </body>
 </html>
