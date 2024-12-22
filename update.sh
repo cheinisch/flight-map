@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 echo "Starte Update des Dienstes..."
 REPO_URL="https://github.com/cheinisch/flight-map.git"
 PORT=8080
