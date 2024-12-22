@@ -26,9 +26,9 @@
             margin: 0;
         }
         #map {
-            width: 100%;
-            height: 100%;
-        }
+    width: 100%;
+    height: 100vh; /* Volle Bildschirmhöhe */
+}
             #sidebar {
                 width: 25%;
                 height: 100%;
@@ -117,6 +117,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="aircraft-list" style="height: 300px; overflow-y: auto;"></div>
                 </div>        
         </div>
         <script>
@@ -125,15 +126,17 @@
             let selectedSource = 'all';
 
             async function fetchConfig() {
+                console.log('Starte Map-Initialisierung...');
                 const response = await fetch('/config');
                 const config = await response.json();
                 const { lat, lon, sources } = config;
 
                 // Map initialisieren
-                map = L.map('map').setView([lat, lon], 8);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19
-                }).addTo(map);
+                map = L.map('map').setView([51.1657, 10.4515], 6); // Beispiel: Deutschland
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
+console.log('Map sollte nun sichtbar sein.');
             }
 
             async function fetchData() {

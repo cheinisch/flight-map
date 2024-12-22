@@ -3,7 +3,7 @@ position:
   lat: 0.0
   lon: 0.0
 sources:
-  - ip: 192.168.1.100
+  - ip: 10.0.5.10
     port: 30003
   - ip: 192.168.1.101
     port: 30003
