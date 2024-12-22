@@ -1,117 +1,169 @@
 <!doctype html>
 <html lang="en" data-bs-theme="dark" data-bs-core="modern">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Flight Map</title>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Flightmap // Aircrafts 2/1 </title>
 
-    <!-- Halfmoon CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/halfmoon@2.0.2/css/halfmoon.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link href="https://cdn.jsdelivr.net/npm/halfmoon@2.0.2/css/cores/halfmoon.modern.css" rel="stylesheet" crossorigin="anonymous">
+        <!-- UIkit CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/css/uikit.min.css" />
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha384-3AOz6M3FgoFZH/0eOOf5LzmfgkOnyxWqZ9e3z9z1gHVQv06U2y27jTwaTr1I0iUY" crossorigin=""/>
+        <!-- UIkit JS -->
+        <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit-icons.min.js"></script>
 
-    <style>
+                <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+        
+        <!-- Leaflet JavaScript -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+        <style>
+        body {
+            display: flex;
+            height: 100vh; /* 100% der Bildschirmhöhe */
+            margin: 0;
+        }
         #map {
-            width: 75%;
-            height: 100vh;
-            float: left;
+            width: 100%;
+            height: 100%;
         }
-        #sidebar {
-            width: 25%;
-            height: 100vh;
-            overflow-y: auto;
-            padding: 10px;
-            background: #f4f4f4;
-        }
-        .aircraft {
-            padding: 5px;
-            margin: 5px 0;
-            background: #ddd;
-            cursor: pointer;
-        }
-        .aircraft:hover {
-            background: #ccc;
-        }
-    </style>
-</head>
-<body>
-<div class="container-fluid">
-    <div class="row">
-        <div id="map"></div>
-        <div id="sidebar">
-            <h2>Aircraft Overview</h2>
-            <select id="sourceSelect">
-                <option value="all">Alle Quellen</option>
-            </select>
-            <div id="aircraft-list"></div>
+            #sidebar {
+                width: 25%;
+                height: 100%;
+                overflow-y: auto;
+                padding: 10px;
+                background: #f4f4f4;
+            }
+            .aircraft {
+                padding: 5px;
+                margin: 5px 0;
+                background: #ddd;
+                cursor: pointer;
+            }
+            .aircraft:hover {
+                background: #ccc;
+            }
+            .mainrow{
+                height:100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="uk-width-expand"  uk-grid>      
+              <div class="uk-width-expand@m">
+                <div id="map"></div>
+              </div>          
+                <div class="uk-width-1-3@m">
+                    <h2>Flightmap overview</h2>
+                    Aircraft total:
+                    <br >
+                    Aircraft with position:
+                    <br />
+                    Position:
+                    <br >
+                    Distance from Receiver:
+                    <br />
+                    Last message:
+                    <div class="row">
+                        <div class="col-lg-3">
+                            Last message:
+                        </div>
+                        <div class="col-lg-3">
+                            Last message:
+                        </div>
+                        <div class="col-lg-3">
+                            Last message:
+                        </div>
+                        <div class="col-lg-3">
+                            Last message:
+                        </div>
+                        <div class="col">
+                            Last message:
+                        </div>
+                        <div class="col">
+                            Last message:
+                        </div>
+                        <div class="col">
+                            Last message:
+                        </div>
+                    </div>
+                    <table class="uk-table uk-table-divider">
+                        <thead>
+                            <tr>
+                                <th>ICAO</th>
+                                <th>Country</th>
+                                <th>Flight</th>
+                                <th>Squawk</th>
+                                <th>Altitude</th>
+                                <th>Speed</th>
+                                <th>Track</th>
+                                <th>Msgs</th>
+                                <th>Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1234</td>
+                                <td>GER</td>
+                                <td>LH123</td>
+                                <td>7500</td>
+                                <td>23.000</td>
+                                <td>145</td>
+                                <td>183</td>
+                                <td>0</td>
+                                <td>3.2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>        
         </div>
-    </div>
-</div>
+        <script>
+            let map;
+            let markers = {};
+            let selectedSource = 'all';
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha384-rjHAa6Hl0Kt9fbH0f7ywX1MCQqL4cUZmtdjXklkYY9pI5I3S0MvIJo/Y2W+bHgsJ" crossorigin=""></script>
+            async function fetchConfig() {
+                const response = await fetch('/config');
+                const config = await response.json();
+                const { lat, lon, sources } = config;
 
-<script>
-    let map;
-    let markers = {};
-    let selectedSource = 'all';
-
-    async function fetchConfig() {
-        const response = await fetch('/config');
-        const config = await response.json();
-        const { lat, lon, sources } = config;
-
-        // Map initialisieren
-        map = L.map('map').setView([lat, lon], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-        }).addTo(map);
-
-        // Quellen in Dropdown einfügen
-        const sourceSelect = document.getElementById('sourceSelect');
-        sources.forEach(source => {
-            const option = document.createElement('option');
-            option.value = source.name;
-            option.textContent = source.name;
-            sourceSelect.appendChild(option);
-        });
-    }
-
-    async function fetchData() {
-        const response = await fetch(`/data?source=${selectedSource}`);
-        const aircraft = await response.json();
-        const list = document.getElementById('aircraft-list');
-        list.innerHTML = '';
-
-        aircraft.forEach(ac => {
-            const { id, lat, lon, alt, speed, source } = ac;
-
-            // Marker aktualisieren oder hinzufügen
-            if (markers[id]) {
-                markers[id].setLatLng([lat, lon]);
-            } else {
-                markers[id] = L.marker([lat, lon]).addTo(map);
+                // Map initialisieren
+                map = L.map('map').setView([lat, lon], 8);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(map);
             }
 
-            // Flugzeugliste aktualisieren
-            const item = document.createElement('div');
-            item.className = 'aircraft';
-            item.textContent = `ID: ${id}, Höhe: ${alt}m, Speed: ${speed}km/h, Quelle: ${source}`;
-            item.onclick = () => map.setView([lat, lon], 8);
-            list.appendChild(item);
-        });
-    }
+            async function fetchData() {
+                const response = await fetch(`/data?source=${selectedSource}`);
+                const aircraft = await response.json();
+                const list = document.getElementById('aircraft-list');
+                list.innerHTML = '';
 
-    document.getElementById('sourceSelect').addEventListener('change', (e) => {
-        selectedSource = e.target.value;
-        fetchData();
-    });
+                aircraft.forEach(ac => {
+                    const { id, lat, lon, alt, speed, source } = ac;
 
-    fetchConfig();
-    fetchData();
-    setInterval(fetchData, 1000);
-</script>
-</body>
+                    // Marker aktualisieren oder hinzufügen
+                    if (markers[id]) {
+                        markers[id].setLatLng([lat, lon]);
+                    } else {
+                        markers[id] = L.marker([lat, lon]).addTo(map);
+                    }
+
+                    // Flugzeugliste aktualisieren
+                    const item = document.createElement('div');
+                    item.className = 'aircraft';
+                    item.textContent = `ID: ${id}, Höhe: ${alt}m, Speed: ${speed}km/h, Quelle: ${source}`;
+                    item.onclick = () => map.setView([lat, lon], 8);
+                    list.appendChild(item);
+                });
+            }
+
+            fetchConfig();
+           // fetchData();
+            //setInterval(fetchData, 1000);
+        </script>
+    </body>
 </html>
