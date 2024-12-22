@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Konfiguration
-REPO_URL="https://github.com/cheinisch/flightmap.git"  # Ersetze mit dem tatsächlichen Repository
-INSTALL_DIR="/opt/adsb-service"
-SERVICE_NAME="adsb-service"
-USER="adsbuser"
+REPO_URL="https://github.com/USERNAME/flight-map.git"  # Ersetze mit dem tatsächlichen Repository
+INSTALL_DIR="/opt/flight-map"
+SERVICE_NAME="flight-map"
+USER="flightmapuser"
 PORT=8080
 
 # Voraussetzungen prüfen
@@ -39,16 +39,23 @@ sudo -u "$USER" "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirement
 echo "Erstelle Konfigurationsdatei..."
 cat <<EOF | sudo tee "$INSTALL_DIR/config.yaml"
 port: $PORT
+position:
+  lat: 50.1109
+  lon: 8.6821
 sources:
-  - 192.168.1.100:30003
-  - 192.168.1.101:30003
+  - name: "Receiver 1"
+    ip: 192.168.1.100
+    port: 30003
+  - name: "Receiver 2"
+    ip: 192.168.1.101
+    port: 30003
 EOF
 
 # Systemd-Dienst erstellen
 echo "Erstelle Systemd-Dienst..."
 cat <<EOF | sudo tee "/etc/systemd/system/$SERVICE_NAME.service"
 [Unit]
-Description=ADSB Web Interface Service
+Description=Flight Map Web Interface Service
 After=network.target
 
 [Service]

@@ -1,0 +1,12 @@
+[Unit]
+Description=Flight Map Web Interface Service
+After=network.target
+
+[Service]
+User=flightmapuser
+WorkingDirectory=/opt/flight-map
+ExecStart=/opt/flight-map/venv/bin/python3 /opt/flight-map/main.py --config /opt/flight-map/config.yaml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

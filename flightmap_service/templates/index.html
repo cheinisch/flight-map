@@ -1,109 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADS-B Tracker</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <style>
+<!doctype html>
+<html lang="en" data-bs-theme="dark" data-bs-core="modern">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Flightmap // Aircrafts 2/1 </title>
+        <!-- Halfmoon CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/halfmoon@2.0.2/css/halfmoon.min.css" rel="stylesheet" integrity="sha256-RjeFzczeuZHCyS+Gvz+kleETzBF/o84ZRHukze/yv6o=" crossorigin="anonymous">
+        <!-- Halfmoon modern core theme -->
+        <link href="https://cdn.jsdelivr.net/npm/halfmoon@2.0.2/css/cores/halfmoon.modern.css" rel="stylesheet" integrity="sha256-DD6elX+jPmbFYPsGvzodUv2+9FHkxHlVtQi0/RJVULs=" crossorigin="anonymous">
+        <!-- Or just include all the core themes together:
+        <link href="https://cdn.jsdelivr.net/npm/halfmoon@2.0.2/css/cores/halfmoon.cores.css" rel="stylesheet" integrity="sha256-MAzAVJMU/ze52ZHcA8CeqRrCOVndMZlHwNeS2c73vP4=" crossorigin="anonymous">
+
+        -->
+
+            <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    
+
+
+        <style>
         body {
             display: flex;
-            height: 100vh;
+            height: 100vh; /* 100% der Bildschirmhöhe */
             margin: 0;
         }
         #map {
-            width: 75%;
+            width: 100%;
             height: 100%;
         }
-        #sidebar {
-            width: 25%;
-            height: 100%;
-            overflow-y: auto;
-            padding: 10px;
-            background: #f4f4f4;
-        }
-        .aircraft {
-            padding: 5px;
-            margin: 5px 0;
-            background: #ddd;
-            cursor: pointer;
-        }
-        .aircraft:hover {
-            background: #ccc;
-        }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <div id="sidebar">
-        <h3>Flugzeugliste</h3>
-        <select id="sourceSelect">
-            <option value="all">Alle Quellen</option>
-        </select>
-        <div id="aircraft-list"></div>
-    </div>
-
-    <script>
-        const map = L.map('map').setView([50, 10], 6);  // Initiale Kartenposition
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-        }).addTo(map);
-
-        const markers = {};  // Zum Speichern der Marker
-        let selectedSource = 'all';
-
-        // Quellen abrufen und Dropdown füllen
-        async function fetchSources() {
-            const response = await fetch('/sources');
-            const sources = await response.json();
-            const sourceSelect = document.getElementById('sourceSelect');
-
-            sources.forEach(source => {
-                const option = document.createElement('option');
-                option.value = source;
-                option.textContent = source;
-                sourceSelect.appendChild(option);
-            });
-        }
-
-        // Daten abrufen und aktualisieren
-        async function fetchData() {
-            const response = await fetch(`/data?source=${selectedSource}`);
-            const aircraft = await response.json();
-            const list = document.getElementById('aircraft-list');
-            list.innerHTML = '';
-
-            aircraft.forEach(ac => {
-                const { id, lat, lon, alt, speed, source } = ac;
-
-                // Marker aktualisieren oder hinzufügen
-                if (markers[id]) {
-                    markers[id].setLatLng([lat, lon]);
-                } else {
-                    markers[id] = L.marker([lat, lon]).addTo(map);
-                }
-
-                // Flugzeugliste aktualisieren
-                const item = document.createElement('div');
-                item.className = 'aircraft';
-                item.textContent = `ID: ${id}, Höhe: ${alt}m, Speed: ${speed}km/h, Quelle: ${source}`;
-                item.onclick = () => map.setView([lat, lon], 8);
-                list.appendChild(item);
-            });
-        }
-
-        // Event-Listener für Quellenauswahl
-        document.getElementById('sourceSelect').addEventListener('change', (e) => {
-            selectedSource = e.target.value;
-            fetchData();
-        });
-
-        // Quellen laden und Daten regelmäßig aktualisieren
-        fetchSources();
-        fetchData();
-        setInterval(fetchData, 1000);  // 1-Sekunden-Update
-
-    </script>
-</body>
+            #sidebar {
+                width: 25%;
+                height: 100%;
+                overflow-y: auto;
+                padding: 10px;
+                background: #f4f4f4;
+            }
+            .aircraft {
+                padding: 5px;
+                margin: 5px 0;
+                background: #ddd;
+                cursor: pointer;
+            }
+            .aircraft:hover {
+                background: #ccc;
+            }
+            .row{
+                height:100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">          
+              <div class="col">
+                <div id="map"></div>
+              </div>          
+                <div class="col-12 col-lg-4">
+                    <h2>Flightmap overview</h2>
+                    Aircraft total:
+                    <br >
+                    Aircraft with position:
+                    <br />
+                    Position:
+                    <br >
+                    Distance from Receiver:
+                    <br />
+                    Last message:
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ICAO</th>
+                                <th>Country</th>
+                                <th>Flight</th>
+                                <th>Squawk</th>
+                                <th>Altitude</th>
+                                <th>Speed</th>
+                                <th>Track</th>
+                                <th>Msgs</th>
+                                <th>Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1234</td>
+                                <td>1234</td>
+                                <td>0020</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>        
+            </div>          
+        </div>
+        <script>
+            // Debugging: Direkt nach dem Laden prüfen
+            console.log('Leaflet verfügbar?', typeof L);
+    
+            // Code nur ausführen, wenn L existiert
+            if (typeof L !== "undefined") {
+                const map = L.map('map').setView([50, 10], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(map);
+            } else {
+                console.error('Leaflet konnte nicht geladen werden!');
+            }
+        </script>
+    </body>
 </html>

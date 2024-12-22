@@ -1,0 +1,9 @@
+port: 8080
+position:
+  lat: 0.0
+  lon: 0.0
+sources:
+  - ip: 192.168.1.100
+    port: 30003
+  - ip: 192.168.1.101
+    port: 30003
