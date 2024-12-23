@@ -51,9 +51,9 @@
               </div>          
                 <div class="uk-width-1-3@m uk-light uk-background-secondary">
                     <h2>Flightmap overview</h2>
-                    Aircraft total: <span id="aircraft_total"></span>
+                    Aircraft total: <span id="aircraft_total">0</span>
                     <br >
-                    Aircraft with position: <span id="aircraft_position"></span>
+                    Aircraft with position: <span id="aircraft_position">0</span>
                     <br />
                     <h3>Aircraft ID</h3>
                     <div class="aircraft-details uk-grid-column-small" uk-grid>
@@ -138,7 +138,20 @@
                 }
             }
 
+            async function fetchAircraftData() {
+                try {
+                    const response = await fetch('/data');
+                    const data = await response.json();
+                    document.getElementById('aircraft_total').textContent = data.length || 0;
+                } catch (error) {
+                    console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
+                    document.getElementById('aircraft_total').textContent = 0;
+                }
+            }
+
             fetchConfigAndInitMap();
+            fetchAircraftData();
+            setInterval(fetchAircraftData, 5000); // Aktualisiere alle 5 Sekunden
         </script>
     </body>
 </html>

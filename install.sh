@@ -44,7 +44,7 @@ position:
   lon: 7.9491
 sources:
   - name: "Receiver 1"
-    ip: 192.168.1.100
+    ip: 10.0.5.10
     port: 30003
   - name: "Receiver 2"
     ip: 192.168.1.101
