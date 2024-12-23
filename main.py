@@ -3,6 +3,7 @@ import json
 import time
 from flask import Flask, jsonify, request, render_template
 import socket
+from flask_cors import CORS
 
 # Konfiguration laden
 def load_config(config_path):
@@ -16,6 +17,7 @@ SOURCES = config['sources']
 
 # Flask-App erstellen
 app = Flask(__name__)
+CORS(app)  # CORS-Unterstützung aktivieren
 
 # Daten zwischenspeichern
 aircraft_data = {}
@@ -34,16 +36,19 @@ def fetch_data():
                     for line in raw_data.split('\n'):
                         parts = line.split(',')
                         if len(parts) > 4:
-                            icao = parts[0]
-                            lat = float(parts[1])
-                            lon = float(parts[2])
-                            alt = float(parts[3])
-                            speed = float(parts[4])
-                            aircraft_data[icao] = {
-                                'lat': lat, 'lon': lon, 'alt': alt, 'speed': speed, 'source': name
-                            }
+                            try:
+                                icao = parts[0]
+                                lat = float(parts[1])
+                                lon = float(parts[2])
+                                alt = float(parts[3])
+                                speed = float(parts[4])
+                                aircraft_data[icao] = {
+                                    'lat': lat, 'lon': lon, 'alt': alt, 'speed': speed, 'source': name
+                                }
+                            except ValueError as ve:
+                                print(f"Fehler beim Parsen der Daten von {name}: {ve}")
             except Exception as e:
-                print(f"Fehler beim Abrufen von {name}: {e}")
+                print(f"Netzwerkfehler bei {name}: {e}")
         time.sleep(1)
 
 # Endpunkte definieren
@@ -53,6 +58,7 @@ def index():
 
 @app.route('/data', methods=['GET'])
 def get_data():
+    print('Aktuelle Daten:', aircraft_data)  # Debugging
     source = request.args.get('source', 'all')
     if source == 'all':
         return jsonify(list(aircraft_data.values()))
