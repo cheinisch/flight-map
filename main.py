@@ -46,29 +46,39 @@ def fetch_data():
                         raw_data = s.recv(8192).decode('utf-8')
                         print(f"Empfangene Rohdaten von {name}: {raw_data[:100]}")  # Zeige die ersten 100 Zeichen
 
-                        # Parsing der empfangenen Daten
-                        for line in raw_data.split('\\n'):
-                            parts = line.split(',')
-                            if len(parts) > 10 and parts[0] == 'MSG' and parts[1] in ('3', '5'):
-                                icao = parts[4]  # ICAO-Adresse
-                                lat = float(parts[6]) if parts[6] else 50.1109  # Dummy Latitude
-                                lon = float(parts[7]) if parts[7] else 8.6821  # Dummy Longitude
-                                alt = float(parts[11]) if parts[11] else 0  # Höhe
+                        # Debug: Zeige alle Nachrichten
+                        for line in raw_data.split('\n'):
+                            print(f"Nachricht: {line}")  # Logge jede einzelne Nachricht
 
-                                # Speichern der Daten
-                                aircraft_data[icao] = {
-                                    'lat': lat,
-                                    'lon': lon,
-                                    'alt': alt,
-                                    'speed': 0,
-                                    'source': name
-                                }
-                                print(f"Gespeicherte Daten: {aircraft_data[icao]}")
+                            # Parsing erweitern
+                            parts = line.split(',')
+                            if len(parts) > 10 and parts[0] == 'MSG':
+                                subtype = parts[1]  # Subtyp der Nachricht
+                                print(f"Subtyp: {subtype}")
+
+                                # Suche nach Positionsdaten in Subtyp 3 oder 5
+                                if subtype in ('3', '5'):
+                                    icao = parts[4]  # ICAO-Adresse
+                                    lat = float(parts[6]) if parts[6] else None
+                                    lon = float(parts[7]) if parts[7] else None
+                                    alt = float(parts[11]) if parts[11] else 0  # Höhe
+
+                                    # Speichern der Daten, falls Position verfügbar
+                                    if lat and lon:
+                                        aircraft_data[icao] = {
+                                            'lat': lat,
+                                            'lon': lon,
+                                            'alt': alt,
+                                            'speed': 0,
+                                            'source': name
+                                        }
+                                        print(f"Gespeicherte Daten: {aircraft_data[icao]}")
                 except Exception as e:
                     print(f"Fehler beim Abrufen von {name}: {e}")
             time.sleep(1)
         except Exception as e:
             print(f"Allgemeiner Fehler: {e}")
+
 
 # Testverbindung zu einer Quelle
 @app.route('/test_connection', methods=['GET'])
