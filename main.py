@@ -63,12 +63,16 @@ def index():
 
 @app.route('/data', methods=['GET'])
 def get_data():
-    print('Aktuelle Daten:', aircraft_data)  # Debugging
+    print(f"Aktuelle Flugzeugdaten: {aircraft_data}")  # Debug-Ausgabe
     source = request.args.get('source', 'all')
+
     if source == 'all':
-        return jsonify(list(aircraft_data.values()))
+        data = list(aircraft_data.values())
+        print(f"Daten für alle Quellen: {data}")  # Debug
+        return jsonify(data)
     else:
         filtered = [v for v in aircraft_data.values() if v['source'] == source]
+        print(f"Gefilterte Daten: {filtered}")  # Debug
         return jsonify(filtered)
     
 @app.route('/test_connection', methods=['GET'])
