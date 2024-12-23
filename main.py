@@ -3,7 +3,6 @@ import json
 import time
 from flask import Flask, jsonify, request, render_template
 import socket
-from flask_cors import CORS
 
 # Konfiguration laden
 def load_config(config_path):
@@ -17,44 +16,80 @@ SOURCES = config['sources']
 
 # Flask-App erstellen
 app = Flask(__name__)
-CORS(app)  # CORS-Unterstützung aktivieren
 
 # Daten zwischenspeichern
 aircraft_data = {}
+
+def generate_dummy_data():
+    # Dummy-Daten für Fallback
+    return {
+        'DUMMY1': {'lat': 50.1109, 'lon': 8.6821, 'alt': 10000, 'speed': 450, 'source': 'Dummy'},
+        'DUMMY2': {'lat': 48.8566, 'lon': 2.3522, 'alt': 12000, 'speed': 500, 'source': 'Dummy'}
+    }
 
 # Daten aus Quellen abrufen
 def fetch_data():
     global aircraft_data
     while True:
-        for source in SOURCES:
-            ip, port, name = source['ip'], source['port'], source['name']
-            try:
-                print(f"Verbinde zu {ip}:{port} ({name})...")
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.connect((ip, port))
-                    s.settimeout(1.0)
-                    raw_data = s.recv(1024).decode('utf-8')
-                    print(f"Empfangene Daten von {name}: {raw_data}")  # Debug-Ausgabe
+        try:
+            for source in SOURCES:
+                ip, port, name = source['ip'], source['port'], source['name']
+                try:
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.connect((ip, port))
+                        s.settimeout(5.0)
+                        raw_data = s.recv(4096).decode('utf-8')
+                        print(f"Empfangene Rohdaten von {name}: {raw_data}")
 
-                    for line in raw_data.split('\n'):
-                        parts = line.split(',')
-                        if len(parts) > 4:
-                            icao = parts[0]
-                            lat = float(parts[1])
-                            lon = float(parts[2])
-                            alt = float(parts[3])
-                            speed = float(parts[4])
+                        # Parsing der empfangenen Daten
+                        for line in raw_data.split('\n'):
+                            parts = line.split(',')
+                            if len(parts) > 10 and parts[0] == 'MSG':
+                                icao = parts[4]  # ICAO-Adresse
+                                alt = float(parts[11]) if parts[11] else 0  # Höhe
+                                lat = 50.1109  # Dummy-Latitude, falls nicht verfügbar
+                                lon = 8.6821  # Dummy-Longitude, falls nicht verfügbar
+                                speed = 0  # Geschwindigkeit nicht im empfangenen Beispiel
 
-                            # Flugzeugdaten speichern
-                            aircraft_data[icao] = {
-                                'lat': lat, 'lon': lon, 'alt': alt, 'speed': speed, 'source': name
-                            }
+                                # Speichern der Daten
+                                aircraft_data[icao] = {
+                                    'lat': lat,
+                                    'lon': lon,
+                                    'alt': alt,
+                                    'speed': speed,
+                                    'source': name
+                                }
+                                print(f"Gespeicherte Daten: {aircraft_data[icao]}")
+                except Exception as e:
+                    print(f"Fehler beim Abrufen von {name}: {e}")
+            time.sleep(1)
+        except Exception as e:
+            print(f"Allgemeiner Fehler: {e}")
 
-                            print(f"Gespeicherte Daten: {aircraft_data[icao]}")  # Debug-Ausgabe
-
-            except Exception as e:
-                print(f"Fehler beim Abrufen von {name} ({ip}:{port}): {e}")
-        time.sleep(1)
+# Testverbindung zu einer Quelle
+@app.route('/test_connection', methods=['GET'])
+def test_connection():
+    test_results = []
+    for source in SOURCES:
+        ip, port, name = source['ip'], source['port'], source['name']
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((ip, port))
+                s.settimeout(5.0)
+                raw_data = s.recv(1024).decode('utf-8')
+                test_results.append({
+                    'source': name,
+                    'status': 'success',
+                    'sample_data': raw_data.split('\n')[:5]  # Zeige bis zu 5 Zeilen
+                })
+        except Exception as e:
+            print(f"Fehler bei {name} ({ip}:{port}): {e}")
+            test_results.append({
+                'source': name,
+                'status': 'error',
+                'error': str(e)
+            })
+    return jsonify(test_results)
 
 # Endpunkte definieren
 @app.route('/')
@@ -64,29 +99,7 @@ def index():
 @app.route('/data', methods=['GET'])
 def get_data():
     print(f"Aktuelle Flugzeugdaten: {aircraft_data}")  # Debug-Ausgabe
-    source = request.args.get('source', 'all')
-
-    if source == 'all':
-        data = list(aircraft_data.values())
-        print(f"Daten für alle Quellen: {data}")  # Debug
-        return jsonify(data)
-    else:
-        filtered = [v for v in aircraft_data.values() if v['source'] == source]
-        print(f"Gefilterte Daten: {filtered}")  # Debug
-        return jsonify(filtered)
-    
-@app.route('/test_connection', methods=['GET'])
-def test_connection():
-    try:
-        ip = SOURCES[0]['ip']
-        port = SOURCES[0]['port']
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((ip, port))
-            s.settimeout(1.0)
-            raw_data = s.recv(1024).decode('utf-8')
-            return jsonify({'success': True, 'data': raw_data})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+    return jsonify(list(aircraft_data.values()))
 
 @app.route('/sources', methods=['GET'])
 def get_sources():
