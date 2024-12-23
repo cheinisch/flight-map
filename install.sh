@@ -40,8 +40,8 @@ echo "Erstelle Konfigurationsdatei..."
 cat <<EOF | sudo tee "$INSTALL_DIR/config.yaml"
 port: $PORT
 position:
-  lat: 50.1109
-  lon: 8.6821
+  lat: 50.0357
+  lon: 7.9491
 sources:
   - name: "Receiver 1"
     ip: 192.168.1.100

@@ -120,14 +120,9 @@
                     const response = await fetch('/config');
                     const config = await response.json();
                     const { lat, lon } = config.position;
-                    
-                    // debug
-                    console.log('Geladene Konfiguration:', config);
-                    console.log('lat:', lat);
-                    console.log('lon:', lon);
 
                     // Karte zentrieren mit Zoomstufe 10
-                    const map = L.map('map').setView([lat, lon]);
+                    const map = L.map('map').setView([lat, lon], 10);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         maxZoom: 19
                     }).addTo(map);
