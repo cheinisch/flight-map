@@ -3,6 +3,11 @@ import json
 import time
 from flask import Flask, jsonify, request, render_template
 import socket
+import logging
+
+# Flask-Logger für weniger Lärm konfigurieren
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # Konfiguration laden
 def load_config(config_path):
@@ -37,26 +42,27 @@ def fetch_data():
                 try:
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.connect((ip, port))
-                        s.settimeout(5.0)
-                        raw_data = s.recv(4096).decode('utf-8')
-                        print(f"Empfangene Rohdaten von {name}: {raw_data}")
+                        s.settimeout(10.0)
+                        raw_data = s.recv(8192).decode('utf-8')
+                        print(f"Empfangene Rohdaten von {name}: {raw_data[:100]}")  # Zeige die ersten 100 Zeichen
 
                         # Parsing der empfangenen Daten
                         for line in raw_data.split('\n'):
                             parts = line.split(',')
-                            if len(parts) > 10 and parts[0] == 'MSG':
+                            if len(parts) > 4 and parts[0] in ('MSG', 'AIR'):
                                 icao = parts[4]  # ICAO-Adresse
-                                alt = float(parts[11]) if parts[11] else 0  # Höhe
-                                lat = 50.1109  # Dummy-Latitude, falls nicht verfügbar
-                                lon = 8.6821  # Dummy-Longitude, falls nicht verfügbar
-                                speed = 0  # Geschwindigkeit nicht im empfangenen Beispiel
+                                alt = float(parts[3]) if parts[3] else 0  # Höhe
+
+                                # Fallback für fehlende Positionen
+                                lat = 50.1109  # Dummy-Latitude
+                                lon = 8.6821  # Dummy-Longitude
 
                                 # Speichern der Daten
                                 aircraft_data[icao] = {
                                     'lat': lat,
                                     'lon': lon,
                                     'alt': alt,
-                                    'speed': speed,
+                                    'speed': 0,  # Geschwindigkeit nicht verfügbar
                                     'source': name
                                 }
                                 print(f"Gespeicherte Daten: {aircraft_data[icao]}")
@@ -73,10 +79,12 @@ def test_connection():
     for source in SOURCES:
         ip, port, name = source['ip'], source['port'], source['name']
         try:
+            print(f"Teste Verbindung zu {name} ({ip}:{port})...")
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((ip, port))
-                s.settimeout(5.0)
-                raw_data = s.recv(1024).decode('utf-8')
+                s.settimeout(10.0)
+                raw_data = s.recv(8192).decode('utf-8')
+                print(f"Empfangene Daten von {name}: {raw_data[:100]}...")  # Zeige nur die ersten 100 Zeichen
                 test_results.append({
                     'source': name,
                     'status': 'success',
