@@ -120,6 +120,11 @@
                     const response = await fetch('/config');
                     const config = await response.json();
                     const { lat, lon } = config;
+                    
+                    // debug
+                    console.log('Geladene Konfiguration:', config);
+                    console.log('lat:', lat);
+                    console.log('lon:', lon);
 
                     // Karte zentrieren mit Zoomstufe 10
                     const map = L.map('map').setView([lat, lon]);
