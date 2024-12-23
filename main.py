@@ -66,7 +66,10 @@ def get_sources():
 
 @app.route('/config', methods=['GET'])
 def get_config():
-    return jsonify(config_data)
+    try:
+        return jsonify(config)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Anwendung starten
 if __name__ == '__main__':
