@@ -64,6 +64,10 @@ def get_data():
 def get_sources():
     return jsonify([source['name'] for source in SOURCES])
 
+@app.route('/config', methods=['GET'])
+def get_config():
+    return jsonify(config_data)
+
 # Anwendung starten
 if __name__ == '__main__':
     from threading import Thread
