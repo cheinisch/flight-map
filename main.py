@@ -47,22 +47,20 @@ def fetch_data():
                         print(f"Empfangene Rohdaten von {name}: {raw_data[:100]}")  # Zeige die ersten 100 Zeichen
 
                         # Parsing der empfangenen Daten
-                        for line in raw_data.split('\n'):
+                        for line in raw_data.split('\\n'):
                             parts = line.split(',')
-                            if len(parts) > 4 and parts[0] in ('MSG', 'AIR'):
+                            if len(parts) > 10 and parts[0] == 'MSG' and parts[1] in ('3', '5'):
                                 icao = parts[4]  # ICAO-Adresse
-                                alt = float(parts[3]) if parts[3] else 0  # Höhe
-
-                                # Fallback für fehlende Positionen
-                                lat = 50.1109  # Dummy-Latitude
-                                lon = 8.6821  # Dummy-Longitude
+                                lat = float(parts[6]) if parts[6] else 50.1109  # Dummy Latitude
+                                lon = float(parts[7]) if parts[7] else 8.6821  # Dummy Longitude
+                                alt = float(parts[11]) if parts[11] else 0  # Höhe
 
                                 # Speichern der Daten
                                 aircraft_data[icao] = {
                                     'lat': lat,
                                     'lon': lon,
                                     'alt': alt,
-                                    'speed': 0,  # Geschwindigkeit nicht verfügbar
+                                    'speed': 0,
                                     'source': name
                                 }
                                 print(f"Gespeicherte Daten: {aircraft_data[icao]}")
