@@ -115,15 +115,24 @@
                 </div>        
         </div>
         <script>
-            // Karte initialisieren
-            const map = L.map('map').setView([51.1657, 10.4515], 6); // Deutschland-Zentrum
+            async function fetchConfigAndInitMap() {
+                try {
+                    const response = await fetch('/config');
+                    const config = await response.json();
+                    const { lat, lon } = config;
 
-            // OSM-Karte laden
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-            }).addTo(map);
+                    // Karte zentrieren mit Zoomstufe 10
+                    const map = L.map('map').setView([lat, lon], 10);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+                    console.log('Karte zentriert auf:', lat, lon);
+                } catch (error) {
+                    console.error('Fehler beim Laden der Konfiguration:', error);
+                }
+            }
 
-            console.log('Karte wurde geladen.');
+            fetchConfigAndInitMap();
         </script>
     </body>
 </html>
