@@ -119,7 +119,7 @@
                 try {
                     const response = await fetch('/config');
                     const config = await response.json();
-                    const { lat, lon } = config;
+                    const { lat, lon } = config.postition;
                     
                     // debug
                     console.log('Geladene Konfiguration:', config);
