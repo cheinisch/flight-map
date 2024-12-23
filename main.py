@@ -29,26 +29,31 @@ def fetch_data():
         for source in SOURCES:
             ip, port, name = source['ip'], source['port'], source['name']
             try:
+                print(f"Verbinde zu {ip}:{port} ({name})...")
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.connect((ip, port))
                     s.settimeout(1.0)
                     raw_data = s.recv(1024).decode('utf-8')
+                    print(f"Empfangene Daten von {name}: {raw_data}")  # Debug-Ausgabe
+
                     for line in raw_data.split('\n'):
                         parts = line.split(',')
                         if len(parts) > 4:
-                            try:
-                                icao = parts[0]
-                                lat = float(parts[1])
-                                lon = float(parts[2])
-                                alt = float(parts[3])
-                                speed = float(parts[4])
-                                aircraft_data[icao] = {
-                                    'lat': lat, 'lon': lon, 'alt': alt, 'speed': speed, 'source': name
-                                }
-                            except ValueError as ve:
-                                print(f"Fehler beim Parsen der Daten von {name}: {ve}")
+                            icao = parts[0]
+                            lat = float(parts[1])
+                            lon = float(parts[2])
+                            alt = float(parts[3])
+                            speed = float(parts[4])
+
+                            # Flugzeugdaten speichern
+                            aircraft_data[icao] = {
+                                'lat': lat, 'lon': lon, 'alt': alt, 'speed': speed, 'source': name
+                            }
+
+                            print(f"Gespeicherte Daten: {aircraft_data[icao]}")  # Debug-Ausgabe
+
             except Exception as e:
-                print(f"Netzwerkfehler bei {name}: {e}")
+                print(f"Fehler beim Abrufen von {name} ({ip}:{port}): {e}")
         time.sleep(1)
 
 # Endpunkte definieren
@@ -65,6 +70,19 @@ def get_data():
     else:
         filtered = [v for v in aircraft_data.values() if v['source'] == source]
         return jsonify(filtered)
+    
+@app.route('/test_connection', methods=['GET'])
+def test_connection():
+    try:
+        ip = SOURCES[0]['ip']
+        port = SOURCES[0]['port']
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((ip, port))
+            s.settimeout(1.0)
+            raw_data = s.recv(1024).decode('utf-8')
+            return jsonify({'success': True, 'data': raw_data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/sources', methods=['GET'])
 def get_sources():
