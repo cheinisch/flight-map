@@ -61,7 +61,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$INSTALL_DIR
-ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py --config $INSTALL_DIR/config.yaml
+ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py
 Restart=always
 
 [Install]
