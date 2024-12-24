@@ -47,7 +47,7 @@ sources:
     ip: 10.0.5.10
     port: 30003
   - name: "Receiver 2"
-    ip: 192.168.1.101
+    ip: 10.0.5.12
     port: 30003
 EOF
 
