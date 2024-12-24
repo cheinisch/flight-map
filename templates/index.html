@@ -104,26 +104,13 @@
                                 <th>ICAO</th>
                                 <th>Country</th>
                                 <th>Flight</th>
-                                <th>Squawk</th>
                                 <th>Altitude</th>
                                 <th>Speed</th>
-                                <th>Track</th>
-                                <th>Msgs</th>
-                                <th>Age</th>
+                                <th>Squawk</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>1234</td>
-                                <td>GER</td>
-                                <td>LH123</td>
-                                <td>7500</td>
-                                <td>23.000</td>
-                                <td>145</td>
-                                <td>183</td>
-                                <td>0</td>
-                                <td>3.2</td>
-                            </tr>
+                        <tbody id="aircraft_table">
+                            <!-- Dynamisch generierte Zeilen -->
                         </tbody>
                     </table>
                 </div>        
@@ -146,20 +133,53 @@
                 }
             }
 
+            async function fetchAircraftCounts() {
+                try {
+                    const response = await fetch('/aircraft_counts');
+                    const counts = await response.json();
+
+                    // Gesamtanzahl und Anzahl mit Position aktualisieren
+                    document.getElementById('aircraft_total').textContent = counts.total || 0;
+                    document.getElementById('aircraft_position').textContent = counts.with_position || 0;
+                } catch (error) {
+                    console.error('Fehler beim Abrufen der Flugzeuganzahl:', error);
+                }
+            }
+
             async function fetchAircraftData() {
                 try {
                     const response = await fetch('/data');
                     const data = await response.json();
-                    document.getElementById('aircraft_total').textContent = data.length || 0;
+
+                    // Tabelle aktualisieren
+                    const table = document.getElementById('aircraft_table');
+                    table.innerHTML = ''; // Tabelle leeren
+
+                    data.forEach(aircraft => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${aircraft.icao || 'N/A'}</td>
+                            <td>${aircraft.country || 'N/A'}</td>
+                            <td>${aircraft.flight || 'N/A'}</td>
+                            <td>${aircraft.alt || 'N/A'}</td>
+                            <td>${aircraft.speed || 'N/A'}</td>
+                            <td>${aircraft.squawk || 'N/A'}</td>
+                        `;
+                        table.appendChild(row);
+                    });
                 } catch (error) {
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
-                    document.getElementById('aircraft_total').textContent = 0;
                 }
             }
 
+            // Initialisierung
             fetchConfigAndInitMap();
+            fetchAircraftCounts();
             fetchAircraftData();
-            setInterval(fetchAircraftData, 5000); // Aktualisiere alle 5 Sekunden
+
+            // Daten regelmäßig aktualisieren
+            setInterval(fetchAircraftCounts, 5000);
+            setInterval(fetchAircraftData, 5000);
         </script>
     </body>
 </html>

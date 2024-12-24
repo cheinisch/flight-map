@@ -4,6 +4,7 @@ import time
 from flask import Flask, jsonify, request, render_template
 import socket
 import requests
+from datetime import datetime
 
 # Konfiguration laden
 def load_config(config_path):
@@ -25,6 +26,7 @@ def fetch_aircraft_counts():
     """Zählt die Flugzeuge insgesamt und die mit Positionsdaten."""
     total_aircraft = 0
     aircraft_with_position = 0
+    current_time = datetime.utcnow()
 
     for source in SOURCES:
         receiver_ip = source['ip']
@@ -33,8 +35,19 @@ def fetch_aircraft_counts():
             response = requests.get(dump1090_url)
             if response.status_code == 200:
                 data = response.json()
-                total_aircraft += len(data.get('aircraft', []))
-                aircraft_with_position += len([ac for ac in data.get('aircraft', []) if ac.get('lat') and ac.get('lon')])
+                aircraft = data.get('aircraft', [])
+
+                # Filtere Flugzeuge, die in den letzten 60 Sekunden gesehen wurden
+                recent_aircraft = [
+                    ac for ac in aircraft
+                    if 'seen' in ac and ac['seen'] <= 60
+                ]
+
+                total_aircraft = len(recent_aircraft)
+                aircraft_with_position = len([
+                    ac for ac in recent_aircraft
+                    if ac.get('lat') and ac.get('lon')
+                ])
             else:
                 print(f"Fehler beim Abrufen der Daten von {receiver_ip}: HTTP {response.status_code}")
         except Exception as e:
