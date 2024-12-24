@@ -155,18 +155,20 @@
                     const table = document.getElementById('aircraft_table');
                     table.innerHTML = ''; // Tabelle leeren
 
+                    // Alle Flugzeuge durchgehen, auch wenn einige Felder fehlen
                     data.forEach(aircraft => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${aircraft.icao || 'N/A'}</td>
-                            <td>${aircraft.country || 'N/A'}</td>
-                            <td>${aircraft.flight || 'N/A'}</td>
-                            <td>${aircraft.alt || 'N/A'}</td>
-                            <td>${aircraft.speed || 'N/A'}</td>
-                            <td>${aircraft.squawk || 'N/A'}</td>
+                            <td>${aircraft.country || ''}</td>
+                            <td>${aircraft.flight || ''}</td>
+                            <td>${aircraft.alt || ''}</td>
+                            <td>${aircraft.speed || ''}</td>
+                            <td>${aircraft.squawk || ''}</td>
                         `;
                         table.appendChild(row);
                     });
+
                 } catch (error) {
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
