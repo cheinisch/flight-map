@@ -44,6 +44,7 @@ def get_data():
                             'speed': ac.get('speed'),
                             'seen': ac.get('seen'),
                             'flight': ac.get('flight'),
+                            'squawk': ac.get('squawk'),
                             'source': source['name']
                         }
         except Exception as e:
