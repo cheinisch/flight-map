@@ -40,9 +40,10 @@ def get_data():
                             'icao': icao,
                             'lat': ac.get('lat'),
                             'lon': ac.get('lon'),
-                            'alt': ac.get('alt_baro'),
-                            'speed': ac.get('gs'),
+                            'altitude': ac.get('altitude'),
+                            'speed': ac.get('speed'),
                             'seen': ac.get('seen'),
+                            'flight': ac.get('flight'),
                             'source': source['name']
                         }
         except Exception as e:
