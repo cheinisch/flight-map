@@ -22,6 +22,35 @@ app = Flask(__name__)
 # Daten zwischenspeichern
 aircraft_data = {}
 
+@app.route('/data', methods=['GET'])
+def get_data():
+    global aircraft_data
+    # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
+    for source in SOURCES:
+        receiver_ip = source['ip']
+        dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
+        try:
+            response = requests.get(dump1090_url)
+            if response.status_code == 200:
+                data = response.json()
+                for ac in data.get('aircraft', []):
+                    icao = ac.get('hex')
+                    if icao:
+                        aircraft_data[icao] = {
+                            'icao': icao,
+                            'lat': ac.get('lat'),
+                            'lon': ac.get('lon'),
+                            'alt': ac.get('alt_baro'),
+                            'speed': ac.get('gs'),
+                            'seen': ac.get('seen'),
+                            'source': source['name']
+                        }
+        except Exception as e:
+            print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
+    
+    print(f"Aktuelle Flugzeugdaten: {json.dumps(aircraft_data, indent=2)}")
+    return jsonify(list(aircraft_data.values()))
+
 def fetch_aircraft_counts():
     """Zählt die Flugzeuge insgesamt und die mit Positionsdaten."""
     total_aircraft = 0
