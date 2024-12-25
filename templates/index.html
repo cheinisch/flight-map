@@ -186,18 +186,26 @@
 
                                 // Event-Listener für Klick hinzufügen
                                 row.addEventListener('click', () => {
-                                    // Entferne die Highlight-Klasse von allen Zeilen
-                                    document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('uk-background-primary'));
+                                    // Prüfe, ob die Zeile bereits ausgewählt ist
+                                    if (row.classList.contains('uk-background-primary')) {
+                                        // Auswahl entfernen
+                                        row.classList.remove('uk-background-primary');
+                                        localStorage.removeItem('highlightedAircraft');
+                                        detailsContainer.classList.add('hidden');
+                                    } else {
+                                        // Entferne die Highlight-Klasse von allen Zeilen
+                                        document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('uk-background-primary'));
 
-                                    // Füge Highlight-Klasse zur aktuellen Zeile hinzu
-                                    row.classList.add('uk-background-primary');
+                                        // Füge Highlight-Klasse zur aktuellen Zeile hinzu
+                                        row.classList.add('uk-background-primary');
 
-                                    // Speichere ICAO im localStorage
-                                    localStorage.setItem('highlightedAircraft', aircraft.icao);
+                                        // Speichere ICAO im localStorage
+                                        localStorage.setItem('highlightedAircraft', aircraft.icao);
 
-                                    // Zeige Details in der Seitenleiste
-                                    showAircraftDetails(aircraft);
-                                    detailsContainer.classList.remove('hidden');
+                                        // Zeige Details in der Seitenleiste
+                                        showAircraftDetails(aircraft);
+                                        detailsContainer.classList.remove('hidden');
+                                    }
                                 });
 
                                 table.appendChild(row);
@@ -213,6 +221,7 @@
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
             }
+
 
             function showAircraftDetails(aircraft) {
                 document.querySelectorAll('.aircraft-details .content').forEach((content, index) => {
