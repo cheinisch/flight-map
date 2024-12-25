@@ -172,10 +172,10 @@
                                 // Event-Listener für Klick hinzufügen
                                 row.addEventListener('click', () => {
                                     // Entferne die Highlight-Klasse von allen Zeilen
-                                    document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('uk-background-secondary'));
+                                    document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('uk-background-primary'));
 
                                     // Füge Highlight-Klasse zur aktuellen Zeile hinzu
-                                    row.classList.add('uk-background-secondary');
+                                    row.classList.add('uk-background-primary');
 
                                     // Zeige Details in der Seitenleiste
                                     showAircraftDetails(aircraft);
