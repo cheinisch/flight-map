@@ -163,7 +163,7 @@
                             <td>${aircraft.country || ''}</td>
                             <td>${aircraft.flight || ''}</td>
                             <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
-                            <td>${aircraft.speed || ''}</td>
+                            <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
                             <td>${aircraft.squawk || ''}</td>
                         `;
                         table.appendChild(row);
