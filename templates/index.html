@@ -212,7 +212,7 @@
                         aircraft.track || 'N/A',
                         aircraft.speed ? aircraft.speed + ' kt' : 'N/A',
                         `${aircraft.lat || 'N/A'}, ${aircraft.lon || 'N/A'}`,
-                        aircraft.distance_km ? `${aircraft.distance_km} km (${aircraft.distance_nm} nm)` : 'N/A',
+                        aircraft.distance_km ? `${aircraft.distance_nm} nm (${aircraft.distance_km} km)` : 'N/A',
                         aircraft.seen ? `${aircraft.seen} s ago` : 'N/A'
                     ];
                     content.textContent = detailValues[index];
