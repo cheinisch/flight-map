@@ -159,7 +159,6 @@
                     const table = document.getElementById('aircraft_table');
                     table.innerHTML = ''; // Tabelle leeren
 
-                    // Alle Flugzeuge durchgehen, auch wenn einige Felder fehlen
                     data.forEach(aircraft => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -170,6 +169,7 @@
                             <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
                             <td>${aircraft.squawk || ''}</td>
                         `;
+                        row.addEventListener('click', () => showAircraftDetails(aircraft));
                         table.appendChild(row);
                     });
 
@@ -177,6 +177,23 @@
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
             }
+
+            function showAircraftDetails(aircraft) {
+                document.querySelectorAll('.aircraft-details .content').forEach((content, index) => {
+                    const detailValues = [
+                        aircraft.country || 'N/A',
+                        aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A',
+                        aircraft.squawk || 'N/A',
+                        aircraft.track || 'N/A',
+                        aircraft.speed ? aircraft.speed + ' kt' : 'N/A',
+                        `${aircraft.lat || 'N/A'}, ${aircraft.lon || 'N/A'}`,
+                        'N/A', // Distance (not calculated here)
+                        aircraft.seen ? `${aircraft.seen} s ago` : 'N/A'
+                    ];
+                    content.textContent = detailValues[index];
+                });
+            }
+
 
             // Initialisierung
             fetchConfigAndInitMap();
