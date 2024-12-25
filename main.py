@@ -49,6 +49,15 @@ def get_data():
                         }
         except Exception as e:
             print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
+
+        # Filtere Flugzeuge, die älter als 120 Sekunden sind
+    filtered_data = [
+        ac for ac in aircraft_data.values()
+        if ac.get('seen') is not None and ac['seen'] <= 120
+    ]
+
+    print(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
+    return jsonify(filtered_data)
     
     print(f"Aktuelle Flugzeugdaten: {json.dumps(aircraft_data, indent=2)}")
     return jsonify(list(aircraft_data.values()))
@@ -68,10 +77,10 @@ def fetch_aircraft_counts():
                 data = response.json()
                 aircraft = data.get('aircraft', [])
 
-                # Filtere Flugzeuge, die in den letzten 60 Sekunden gesehen wurden
+                # Filtere Flugzeuge, die in den letzten 120 Sekunden gesehen wurden
                 recent_aircraft = [
                     ac for ac in aircraft
-                    if 'seen' in ac and ac['seen'] <= 60
+                    if 'seen' in ac and ac['seen'] <= 120
                 ]
 
                 total_aircraft = len(recent_aircraft)
