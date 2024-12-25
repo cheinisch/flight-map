@@ -158,6 +158,8 @@
                             const table = document.getElementById('aircraft_table');
                             table.innerHTML = ''; // Tabelle leeren
 
+                            const highlightedIcao = localStorage.getItem('highlightedAircraft'); // Aus localStorage laden
+
                             data.forEach(aircraft => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
@@ -169,6 +171,12 @@
                                     <td>${aircraft.squawk || ''}</td>
                                 `;
 
+                                // Highlight wiederherstellen, falls ICAO übereinstimmt
+                                if (aircraft.icao === highlightedIcao) {
+                                    row.classList.add('uk-background-primary');
+                                    showAircraftDetails(aircraft);
+                                }
+
                                 // Event-Listener für Klick hinzufügen
                                 row.addEventListener('click', () => {
                                     // Entferne die Highlight-Klasse von allen Zeilen
@@ -176,6 +184,9 @@
 
                                     // Füge Highlight-Klasse zur aktuellen Zeile hinzu
                                     row.classList.add('uk-background-primary');
+
+                                    // Speichere ICAO im localStorage
+                                    localStorage.setItem('highlightedAircraft', aircraft.icao);
 
                                     // Zeige Details in der Seitenleiste
                                     showAircraftDetails(aircraft);
@@ -189,6 +200,7 @@
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
             }
+
 
 
             function showAircraftDetails(aircraft) {
