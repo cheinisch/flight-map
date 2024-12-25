@@ -79,6 +79,7 @@ def get_data():
                             'squawk': ac.get('squawk'),
                             'distance_km': round(distance_km, 2) if distance_km else None,
                             'distance_nm': round(distance_nm, 2) if distance_nm else None,
+                            'track':ac.get('track'),
                             'source': source['name']
                         }
         except Exception as e:
