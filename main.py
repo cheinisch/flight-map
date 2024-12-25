@@ -23,6 +23,31 @@ app = Flask(__name__)
 # Daten zwischenspeichern
 aircraft_data = {}
 
+# Hilfsfunktion: Flugzeugdaten basierend auf dem ICAO HEX Code abrufen
+def fetch_aircraft_details(icao_hex):
+    """
+    Ruft zusätzliche Flugzeugdetails wie Tailnummer, Modell und Land ab.
+    """
+    api_url = f"https://api.planespotters.net/public/v1/hex/{icao_hex}"
+    try:
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            data = response.json()
+            if 'data' in data and len(data['data']) > 0:
+                aircraft_info = data['data'][0]
+                return {
+                    "tail_number": aircraft_info.get("reg", "Unknown"),
+                    "model": aircraft_info.get("type", "Unknown"),
+                    "country": aircraft_info.get("country", "Unknown")
+                }
+    except Exception as e:
+        print(f"Fehler beim Abrufen der Flugzeugdetails für {icao_hex}: {e}")
+    return {
+        "tail_number": "Unknown",
+        "model": "Unknown",
+        "country": "Unknown"
+}
+
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Berechnet die Distanz zwischen zwei Punkten auf der Erde in nm und km."""
     R_km = 6371  # Erdradius in Kilometern
@@ -49,6 +74,9 @@ def get_data():
     receiver_lat = POSITION['lat']
     receiver_lon = POSITION['lon']
 
+    if receiver_lat == 0.0 and receiver_lon == 0.0:
+        return jsonify({"message": "is in config disabled"})
+
     # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
     for source in SOURCES:
         receiver_ip = source['ip']
@@ -68,6 +96,9 @@ def get_data():
                         if lat is not None and lon is not None:
                             distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
 
+                        # Zusätzliche Flugzeugdetails abrufen
+                        aircraft_details = fetch_aircraft_details(icao)
+
                         aircraft_data[icao] = {
                             'icao': icao,
                             'lat': lat,
@@ -79,7 +110,9 @@ def get_data():
                             'squawk': ac.get('squawk'),
                             'distance_km': round(distance_km, 2) if distance_km else None,
                             'distance_nm': round(distance_nm, 2) if distance_nm else None,
-                            'track':ac.get('track'),
+                            'tail_number': aircraft_details['tail_number'],
+                            'model': aircraft_details['model'],
+                            'country': aircraft_details['country'],
                             'source': source['name']
                         }
         except Exception as e:
