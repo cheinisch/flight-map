@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request, render_template
 import socket
 import requests
 from datetime import datetime
+import math
 
 # Konfiguration laden
 def load_config(config_path):
@@ -22,9 +23,32 @@ app = Flask(__name__)
 # Daten zwischenspeichern
 aircraft_data = {}
 
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Berechnet die Distanz zwischen zwei Punkten auf der Erde in nm und km."""
+    R_km = 6371  # Erdradius in Kilometern
+    R_nm = 3440  # Erdradius in Seemeilen
+
+    # Konvertiere Grad in Radianten
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+
+    # Haversine-Formel
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    c = 2 * math.asin(math.sqrt(a))
+
+    # Entfernungen
+    distance_km = R_km * c
+    distance_nm = R_nm * c
+
+    return distance_km, distance_nm
+
 @app.route('/data', methods=['GET'])
 def get_data():
     global aircraft_data
+    receiver_lat = POSITION['lat']
+    receiver_lon = POSITION['lon']
+
     # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
     for source in SOURCES:
         receiver_ip = source['ip']
@@ -36,21 +60,31 @@ def get_data():
                 for ac in data.get('aircraft', []):
                     icao = ac.get('hex')
                     if icao:
+                        lat = ac.get('lat')
+                        lon = ac.get('lon')
+
+                        # Berechne Entfernung, falls Positionsdaten verfügbar sind
+                        distance_km, distance_nm = (None, None)
+                        if lat is not None and lon is not None:
+                            distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
+
                         aircraft_data[icao] = {
                             'icao': icao,
-                            'lat': ac.get('lat'),
-                            'lon': ac.get('lon'),
+                            'lat': lat,
+                            'lon': lon,
                             'altitude': ac.get('altitude'),
                             'speed': ac.get('speed'),
                             'seen': ac.get('seen'),
                             'flight': ac.get('flight'),
                             'squawk': ac.get('squawk'),
+                            'distance_km': round(distance_km, 2) if distance_km else None,
+                            'distance_nm': round(distance_nm, 2) if distance_nm else None,
                             'source': source['name']
                         }
         except Exception as e:
             print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
 
-        # Filtere Flugzeuge, die älter als 120 Sekunden sind
+    # Filtere Flugzeuge, die älter als 120 Sekunden sind
     filtered_data = [
         ac for ac in aircraft_data.values()
         if ac.get('seen') is not None and ac['seen'] <= 120
@@ -58,9 +92,6 @@ def get_data():
 
     print(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
     return jsonify(filtered_data)
-    
-    print(f"Aktuelle Flugzeugdaten: {json.dumps(aircraft_data, indent=2)}")
-    return jsonify(list(aircraft_data.values()))
 
 def fetch_aircraft_counts():
     """Zählt die Flugzeuge insgesamt und die mit Positionsdaten."""
