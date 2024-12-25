@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark" data-bs-core="modern">
+<html lang="en">
     <head>
         <!-- Required meta tags -->
         <meta charset="utf-8">
@@ -53,6 +53,10 @@
 
             .uk-table td{
                 padding:1px 12px;
+            }
+
+            .hidden {
+                display: none;
             }
         </style>
     </head>
@@ -156,9 +160,11 @@
                         .then(response => response.json())
                         .then(data => {
                             const table = document.getElementById('aircraft_table');
-                            table.innerHTML = ''; // Tabelle leeren
-
+                            const detailsContainer = document.querySelector('.aircraft-details');
                             const highlightedIcao = localStorage.getItem('highlightedAircraft'); // Aus localStorage laden
+
+                            table.innerHTML = ''; // Tabelle leeren
+                            let aircraftSelected = false;
 
                             data.forEach(aircraft => {
                                 const row = document.createElement('tr');
@@ -175,6 +181,7 @@
                                 if (aircraft.icao === highlightedIcao) {
                                     row.classList.add('uk-background-primary');
                                     showAircraftDetails(aircraft);
+                                    aircraftSelected = true;
                                 }
 
                                 // Event-Listener für Klick hinzufügen
@@ -190,18 +197,22 @@
 
                                     // Zeige Details in der Seitenleiste
                                     showAircraftDetails(aircraft);
+                                    detailsContainer.classList.remove('hidden');
                                 });
 
                                 table.appendChild(row);
                             });
+
+                            // Wenn kein Flugzeug ausgewählt ist, verstecke die Details
+                            if (!aircraftSelected) {
+                                detailsContainer.classList.add('hidden');
+                            }
                         })
                         .catch(error => console.error('Fehler beim Abrufen der Flugzeugdaten:', error));
                 } catch (error) {
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
             }
-
-
 
             function showAircraftDetails(aircraft) {
                 document.querySelectorAll('.aircraft-details .content').forEach((content, index) => {
@@ -218,6 +229,7 @@
                     content.textContent = detailValues[index];
                 });
             }
+
 
 
             // Initialisierung
