@@ -152,31 +152,44 @@
 
             async function fetchAircraftData() {
                 try {
-                    const response = await fetch('/data');
-                    const data = await response.json();
+                    fetch('/data')
+                        .then(response => response.json())
+                        .then(data => {
+                            const table = document.getElementById('aircraft_table');
+                            table.innerHTML = ''; // Tabelle leeren
 
-                    // Tabelle aktualisieren
-                    const table = document.getElementById('aircraft_table');
-                    table.innerHTML = ''; // Tabelle leeren
+                            data.forEach(aircraft => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${aircraft.icao || 'N/A'}</td>
+                                    <td>${aircraft.country || ''}</td>
+                                    <td>${aircraft.flight || ''}</td>
+                                    <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
+                                    <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
+                                    <td>${aircraft.squawk || ''}</td>
+                                `;
 
-                    data.forEach(aircraft => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${aircraft.icao || 'N/A'}</td>
-                            <td>${aircraft.country || ''}</td>
-                            <td>${aircraft.flight || ''}</td>
-                            <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
-                            <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
-                            <td>${aircraft.squawk || ''}</td>
-                        `;
-                        row.addEventListener('click', () => showAircraftDetails(aircraft));
-                        table.appendChild(row);
-                    });
+                                // Event-Listener für Klick hinzufügen
+                                row.addEventListener('click', () => {
+                                    // Entferne die Highlight-Klasse von allen Zeilen
+                                    document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('highlight'));
 
+                                    // Füge Highlight-Klasse zur aktuellen Zeile hinzu
+                                    row.classList.add('highlight');
+
+                                    // Zeige Details in der Seitenleiste
+                                    showAircraftDetails(aircraft);
+                                });
+
+                                table.appendChild(row);
+                            });
+                        })
+                        .catch(error => console.error('Fehler beim Abrufen der Flugzeugdaten:', error));
                 } catch (error) {
                     console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
                 }
             }
+
 
             function showAircraftDetails(aircraft) {
                 document.querySelectorAll('.aircraft-details .content').forEach((content, index) => {
