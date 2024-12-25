@@ -92,11 +92,6 @@ def fetch_aircraft_counts():
 def index():
     return render_template('index.html', position=POSITION)
 
-@app.route('/data', methods=['GET'])
-def get_data():
-    print(f"Aktuelle Flugzeugdaten: {aircraft_data}")  # Debug-Ausgabe
-    return jsonify(list(aircraft_data.values()))
-
 @app.route('/aircraft_counts', methods=['GET'])
 def aircraft_counts():
     """Gibt die Gesamtzahl der Flugzeuge und die mit Positionsdaten zurück."""
