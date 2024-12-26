@@ -108,6 +108,7 @@ def get_data():
                             'seen': ac.get('seen'),
                             'flight': ac.get('flight'),
                             'squawk': ac.get('squawk'),
+                            'track': ac.get('track'),
                             'distance_km': round(distance_km, 2) if distance_km else None,
                             'distance_nm': round(distance_nm, 2) if distance_nm else None,
                             'tail_number': aircraft_details['tail_number'],
