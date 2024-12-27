@@ -87,7 +87,7 @@ def get_data():
     for source in SOURCES:
         receiver_ip = source['ip']
         dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
-        dump1090_webinterface = "http://{receiver_ip}/dump1090/gmap.html"
+        dump1090_webinterface = f"http://{receiver_ip}/dump1090/gmap.html"
         try:
             response = requests.get(dump1090_url)
             if response.status_code == 200:
