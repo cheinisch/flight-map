@@ -74,13 +74,17 @@ def get_data():
     receiver_lat = POSITION['lat']
     receiver_lon = POSITION['lon']
 
+    # Überprüfen, ob die Konfiguration deaktiviert ist
     if receiver_lat == 0.0 and receiver_lon == 0.0:
         return jsonify({"message": "is in config disabled"})
+
+    # Temporäre Struktur für die aktuellsten Daten
+    latest_aircraft_data = {}
 
     # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
     for source in SOURCES:
         receiver_ip = source['ip']
-        dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
+        dump1090_url = f"http://{receiver_ip}/dump1090/gmap.html"
         try:
             response = requests.get(dump1090_url)
             if response.status_code == 200:
@@ -88,45 +92,47 @@ def get_data():
                 for ac in data.get('aircraft', []):
                     icao = ac.get('hex')
                     if icao:
-                        lat = ac.get('lat')
-                        lon = ac.get('lon')
+                        # Falls bereits Daten für dieses ICAO vorhanden sind, nur die aktuellsten verwenden
+                        existing = latest_aircraft_data.get(icao)
+                        if not existing or ac.get('seen', float('inf')) < existing['seen']:
+                            lat = ac.get('lat')
+                            lon = ac.get('lon')
 
-                        # Berechne Entfernung, falls Positionsdaten verfügbar sind
-                        distance_km, distance_nm = (None, None)
-                        if lat is not None and lon is not None:
-                            distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
+                            # Berechne Entfernung, falls Positionsdaten verfügbar sind
+                            distance_km, distance_nm = (None, None)
+                            if lat is not None and lon is not None:
+                                distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
 
-                        # Zusätzliche Flugzeugdetails abrufen
-                        aircraft_details = fetch_aircraft_details(icao)
+                            # Track hinzufügen
+                            track = ac.get('track')
 
-                        aircraft_data[icao] = {
-                            'icao': icao,
-                            'lat': lat,
-                            'lon': lon,
-                            'altitude': ac.get('altitude'),
-                            'speed': ac.get('speed'),
-                            'seen': ac.get('seen'),
-                            'flight': ac.get('flight'),
-                            'squawk': ac.get('squawk'),
-                            'track': ac.get('track'),
-                            'distance_km': round(distance_km, 2) if distance_km else None,
-                            'distance_nm': round(distance_nm, 2) if distance_nm else None,
-                            'tail_number': aircraft_details['tail_number'],
-                            'model': aircraft_details['model'],
-                            'country': aircraft_details['country'],
-                            'source': source['name']
-                        }
+                            latest_aircraft_data[icao] = {
+                                'icao': icao,
+                                'lat': lat,
+                                'lon': lon,
+                                'altitude': ac.get('altitude'),
+                                'speed': ac.get('speed'),
+                                'seen': ac.get('seen'),
+                                'flight': ac.get('flight'),
+                                'squawk': ac.get('squawk'),
+                                'distance_km': round(distance_km, 2) if distance_km else None,
+                                'distance_nm': round(distance_nm, 2) if distance_nm else None,
+                                'receiver': source['name'],
+                                'receiver_url': dump1090_url,
+                                'track': track
+                            }
         except Exception as e:
             print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
 
     # Filtere Flugzeuge, die älter als 120 Sekunden sind
     filtered_data = [
-        ac for ac in aircraft_data.values()
+        ac for ac in latest_aircraft_data.values()
         if ac.get('seen') is not None and ac['seen'] <= 120
     ]
 
     print(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
     return jsonify(filtered_data)
+
 
 def fetch_aircraft_counts():
     """Zählt die Flugzeuge insgesamt und die mit Positionsdaten."""
