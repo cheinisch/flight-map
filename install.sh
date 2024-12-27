@@ -43,10 +43,10 @@ position:
   lat: 50.0357
   lon: 7.9491
 sources:
-  - name: "Receiver 1"
+  - name: "VM"
     ip: 10.0.5.10
     port: 30003
-  - name: "Receiver 2"
+  - name: "Pi"
     ip: 10.0.5.12
     port: 30003
 EOF
