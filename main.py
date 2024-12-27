@@ -40,6 +40,7 @@ def fetch_aircraft_details(icao_hex):
                 logging.debug('Response Code 200')
                 logging.debug(api_url)
                 data = response.json()
+                logging.debug(data)
                 if 'data' in data and len(data['data']) > 0:
                     logging.debug('Data Length > 0')
                     aircraft_info = data['data'][0]
