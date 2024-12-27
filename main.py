@@ -41,16 +41,13 @@ def fetch_aircraft_details(icao_hex):
                 logging.debug(api_url)
                 data = response.json()
                 logging.debug(data)
-                if 'data' in data and len(data['data']) > 0:
-                    logging.debug('Data Length > 0')
-                    aircraft_info = data['data'][0]
-                    return {
-                        "tail_number": aircraft_info.get("Registration", "Unknown"),
-                        "model": aircraft_info.get("Type", "Unknown"),
-                        "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
-                        "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
-                        "owner": aircraft_info.get("RegisteredOwners", "Unknown")
-                    }
+                return {
+                    "tail_number": aircraft_info.get("Registration", "Unknown"),
+                    "model": aircraft_info.get("Type", "Unknown"),
+                    "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
+                    "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
+                    "owner": aircraft_info.get("RegisteredOwners", "Unknown")
+            }
             else:
                 print(f"Fehler: HTTP {response.status_code}")
                 return {}
