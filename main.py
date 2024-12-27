@@ -86,7 +86,8 @@ def get_data():
     # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
     for source in SOURCES:
         receiver_ip = source['ip']
-        dump1090_url = f"http://{receiver_ip}/dump1090/gmap.html"
+        dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
+        dump1090_webinterface = "http://{receiver_ip}/dump1090/gmap.html"
         try:
             response = requests.get(dump1090_url)
             if response.status_code == 200:
@@ -120,7 +121,7 @@ def get_data():
                                 'distance_km': round(distance_km, 2) if distance_km else None,
                                 'distance_nm': round(distance_nm, 2) if distance_nm else None,
                                 'receiver': source['name'],
-                                'receiver_url': dump1090_url,
+                                'receiver_url': dump1090_webinterface,
                                 'track': track
                             }
         except Exception as e:
