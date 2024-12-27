@@ -3,6 +3,7 @@
 # Konfiguration
 REPO_URL="https://github.com/cheinisch/flight-map.git"  # Ersetze mit dem tatsächlichen Repository
 INSTALL_DIR="/opt/flight-map"
+CONFIG_FILE="$INSTALL_DIR/config.yaml"
 SERVICE_NAME="flight-map"
 USER="flightmapuser"
 PORT=8080
@@ -30,39 +31,53 @@ sudo -u "$USER" git clone "$REPO_URL" "$INSTALL_DIR" || {
     cd "$INSTALL_DIR" && sudo -u "$USER" git pull
 }
 
-# Eigene Koordinaten abfragen
-echo "Geben Sie Ihre Koordinaten ein (im Format DD.DDD). Standard ist 0.0 für beide Werte."
-read -p "Breitengrad (Latitude, Standard: 0.0): " LAT
-LAT=${LAT:-0.0}
-read -p "Längengrad (Longitude, Standard: 0.0): " LON
-LON=${LON:-0.0}
+# Konfigurationsdatei prüfen
+if [[ -f "$CONFIG_FILE" ]]; then
+    echo "Bestehende Konfigurationsdatei gefunden. Werte werden übernommen."
+    CONFIG_EXISTS=true
+else
+    echo "Keine bestehende Konfigurationsdatei gefunden. Neue Konfiguration wird erstellt."
+    CONFIG_EXISTS=false
+fi
 
-# Receiver abfragen
-RECEIVERS=()
-echo "Konfigurieren Sie die Receiver. Lassen Sie die IP-Adresse leer, um keine weiteren Receiver hinzuzufügen."
-while true; do
-    read -p "Receiver IP-Adresse (leer lassen, um fertigzustellen): " RECEIVER_IP
-    if [[ -z "$RECEIVER_IP" ]]; then
-        break
-    fi
-    read -p "Receiver Bezeichnung: " RECEIVER_NAME
-    RECEIVERS+=("- name: \"$RECEIVER_NAME\"")
-    RECEIVERS+=("  ip: \"$RECEIVER_IP\"")
-    RECEIVERS+=("  port: 30003")
-done
+if [[ "$CONFIG_EXISTS" == false ]]; then
+    # Eigene Koordinaten abfragen
+    echo "Geben Sie Ihre Koordinaten ein (im Format DD.DDD). Standard ist 0.0 für beide Werte."
+    read -p "Breitengrad (Latitude, Standard: 0.0): " LAT
+    LAT=${LAT:-0.0}
+    read -p "Längengrad (Longitude, Standard: 0.0): " LON
+    LON=${LON:-0.0}
 
-# Konfigurationsdatei erstellen
-echo "Erstelle Konfigurationsdatei..."
-{
-    echo "port: $PORT"
-    echo "position:"
-    echo "  lat: $LAT"
-    echo "  lon: $LON"
-    echo "sources:"
-    for RECEIVER in "${RECEIVERS[@]}"; do
-        echo "  $RECEIVER"
+    # Receiver abfragen
+    RECEIVERS=()
+    echo "Konfigurieren Sie die Receiver. Lassen Sie die IP-Adresse leer, um keine weiteren Receiver hinzuzufügen."
+    while true; do
+        read -p "Receiver IP-Adresse (leer lassen, um fertigzustellen): " RECEIVER_IP
+        if [[ -z "$RECEIVER_IP" ]]; then
+            break
+        fi
+        read -p "Receiver Bezeichnung: " RECEIVER_NAME
+        RECEIVERS+=("- name: \"$RECEIVER_NAME\"")
+        RECEIVERS+=("  ip: \"$RECEIVER_IP\"")
+        RECEIVERS+=("  port: 30003")
     done
-} | sudo tee "$INSTALL_DIR/config.yaml"
+
+    # Konfigurationsdatei erstellen
+    echo "Erstelle Konfigurationsdatei..."
+    {
+        echo "port: $PORT"
+        echo "position:"
+        echo "  lat: $LAT"
+        echo "  lon: $LON"
+        echo "sources:"
+        for RECEIVER in "${RECEIVERS[@]}"; do
+            echo "  $RECEIVER"
+        done
+    } | sudo tee "$CONFIG_FILE"
+else
+    echo "Bestehende Konfiguration wird verwendet:"
+    cat "$CONFIG_FILE"
+fi
 
 # Virtuelle Umgebung erstellen und Abhängigkeiten installieren
 echo "Richte virtuelle Umgebung ein..."
@@ -79,7 +94,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$INSTALL_DIR
-ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py --config $INSTALL_DIR/config.yaml
+ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py --config $CONFIG_FILE
 Restart=always
 
 [Install]
