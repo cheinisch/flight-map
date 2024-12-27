@@ -185,6 +185,90 @@
                 }
             }
 
+            
+            async function fetchAircraftCounts() {
+                try {
+                    const response = await fetch('/aircraft_counts');
+                    const counts = await response.json();
+
+                    // Gesamtanzahl und Anzahl mit Position aktualisieren
+                    document.getElementById('aircraft_total').textContent = counts.total || 0;
+                    document.getElementById('aircraft_position').textContent = counts.with_position || 0;
+                } catch (error) {
+                    console.error('Fehler beim Abrufen der Flugzeuganzahl:', error);
+                }
+            }
+
+            async function fetchAircraftData() {
+                try {
+                    fetch('/data')
+                        .then(response => response.json())
+                        .then(data => {
+                            const table = document.getElementById('aircraft_table');
+                            const detailsContainer = document.querySelector('.aircraft-details');
+                            const highlightedIcao = localStorage.getItem('highlightedAircraft'); // Aus localStorage laden
+
+                            table.innerHTML = ''; // Tabelle leeren
+                            let aircraftSelected = false;
+
+                            data.forEach(aircraft => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = 
+                                    <td>${aircraft.icao || 'N/A'}</td>
+                                    <td class="hide_mobile">${aircraft.country || ''}</td>
+                                    <td>${aircraft.flight || ''}</td>
+                                    <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
+                                    <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
+                                    <td>${aircraft.squawk || ''}</td>
+                                ;
+
+                                // Highlight wiederherstellen, falls ICAO übereinstimmt
+                                if (aircraft.icao === highlightedIcao) {
+                                    row.classList.add('uk-background-primary');
+                                    showAircraftDetails(aircraft);
+                                    aircraftSelected = true;
+                                }
+
+                                // Event-Listener für Klick hinzufügen
+                                row.addEventListener('click', () => {
+                                    // Prüfe, ob die Zeile bereits ausgewählt ist
+                                    if (row.classList.contains('uk-background-primary')) {
+                                        // Auswahl entfernen
+                                        row.classList.remove('uk-background-primary');
+                                        localStorage.removeItem('highlightedAircraft');
+                                        detailsContainer.classList.add('hidden');
+                                    } else {
+                                        // Entferne die Highlight-Klasse von allen Zeilen
+                                        document.querySelectorAll('#aircraft_table tr').forEach(r => r.classList.remove('uk-background-primary'));
+
+                                        // Füge Highlight-Klasse zur aktuellen Zeile hinzu
+                                        row.classList.add('uk-background-primary');
+
+                                        // Speichere ICAO im localStorage
+                                        localStorage.setItem('highlightedAircraft', aircraft.icao);
+
+                                        // Zeige Details in der Seitenleiste
+                                        showAircraftDetails(aircraft);
+                                        detailsContainer.classList.remove('hidden');
+                                    }
+                                });
+
+                                table.appendChild(row);
+                            });
+
+                            // Wenn kein Flugzeug ausgewählt ist, verstecke die Details
+                            if (!aircraftSelected) {
+                                detailsContainer.classList.add('hidden');
+                            }
+                        })
+                        .catch(error => console.error('Fehler beim Abrufen der Flugzeugdaten:', error));
+                } catch (error) {
+                    console.error('Fehler beim Abrufen der Flugzeugdaten:', error);
+                }
+            }
+
+
+
             function selectAircraft(aircraft) {
                 localStorage.setItem('highlightedAircraft', aircraft.icao);
                 showAircraftDetails(aircraft);
@@ -211,6 +295,8 @@
 
             initMap();
             setInterval(updatePlanesOnMap, 5000);
+            setInterval(fetchAircraftCounts, 2000);
+            setInterval(fetchAircraftData, 2000);
         </script>
     </body>
 </html>
