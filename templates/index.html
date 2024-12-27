@@ -165,7 +165,6 @@
                     const response = await fetch('/data');
                     const data = await response.json();
 
-                    // Entferne nicht mehr existierende Marker
                     Object.keys(planeMarkers).forEach(icao => {
                         if (!data.find(plane => plane.icao === icao)) {
                             map.removeLayer(planeMarkers[icao]);
@@ -173,7 +172,6 @@
                         }
                     });
 
-                    // Aktualisiere oder füge neue Marker hinzu
                     data.forEach(aircraft => {
                         if (!aircraft.lat || !aircraft.lon) return;
 
@@ -182,9 +180,9 @@
                         if (planeMarkers[aircraft.icao]) {
                             planeMarkers[aircraft.icao]
                                 .setLatLng([aircraft.lat, aircraft.lon])
-                                .setIcon(getIconForPlane(aircraft, isSelected));
+                                .setIcon(getPlaneIcon(aircraft, isSelected));
                         } else {
-                            const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getIconForPlane(aircraft, isSelected) }).addTo(map);
+                            const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getPlaneIcon(aircraft, isSelected) }).addTo(map);
                             marker.on('click', () => selectAircraft(aircraft));
                             planeMarkers[aircraft.icao] = marker;
                         }
