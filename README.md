@@ -43,6 +43,10 @@ A real-time flight tracking application that uses data from ADS-B receivers and 
    ```bash
    python main.py
    ```
+   Start the service:
+   ```bash
+   service flight-map start
+   ```
 
 5. Open your browser and navigate to `http://localhost:<port>` (replace `<port>` with the port defined in `config.yaml`).
 
