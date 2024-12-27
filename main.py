@@ -6,6 +6,7 @@ import socket
 import requests
 from datetime import datetime
 import math
+import logging
 
 # Konfiguration laden
 def load_config(config_path):
@@ -17,6 +18,9 @@ PORT = config['port']
 POSITION = config['position']
 SOURCES = config['sources']
 
+logging.basicConfig(level=logging.debug)
+logging.debug('Debug logging active')
+
 # Flask-App erstellen
 app = Flask(__name__)
 
@@ -25,14 +29,18 @@ aircraft_data = {}
 
 # Hilfsfunktion: Flugzeugdaten basierend auf dem ICAO HEX Code abrufen
 def fetch_aircraft_details(icao_hex):
+    logging.debug('Loading Aircraft Details')
     api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
     retries = 3
     for attempt in range(retries):
+        logging.debug("Run For Loop")
         try:
             response = requests.get(api_url, timeout=5)
             if response.status_code == 200:
+                logging.debug('Response Code 200')
                 data = response.json()
                 if 'data' in data and len(data['data']) > 0:
+                    logging.debug('Data Length > 0')
                     aircraft_info = data['data'][0]
                     return {
                         "tail_number": aircraft_info.get("Registration", "Unknown"),
