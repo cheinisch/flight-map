@@ -113,34 +113,21 @@ def get_data():
                         # Falls bereits Daten für dieses ICAO vorhanden sind, nur die aktuellsten verwenden
                         existing = latest_aircraft_data.get(icao)
                         if not existing or ac.get('seen', float('inf')) < existing['seen']:
-                            lat = ac.get('lat')
-                            lon = ac.get('lon')
-
-                            # Berechne Entfernung, falls Positionsdaten verfügbar sind
-                            distance_km, distance_nm = (None, None)
-                            if lat is not None and lon is not None:
-                                distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
-
-                            # Zusätzliche Details abrufen
+                            # Zusätzliche Details von hexdb.io abrufen
                             aircraft_details = fetch_aircraft_details(icao)
-
-                            # Track hinzufügen
-                            track = ac.get('track')
 
                             latest_aircraft_data[icao] = {
                                 'icao': icao,
-                                'lat': lat,
-                                'lon': lon,
+                                'lat': ac.get('lat'),
+                                'lon': ac.get('lon'),
                                 'altitude': ac.get('altitude'),
                                 'speed': ac.get('speed'),
                                 'seen': ac.get('seen'),
                                 'flight': ac.get('flight'),
                                 'squawk': ac.get('squawk'),
-                                'distance_km': round(distance_km, 2) if distance_km else None,
-                                'distance_nm': round(distance_nm, 2) if distance_nm else None,
                                 'receiver': source['name'],
                                 'receiver_url': dump1090_url,
-                                'track': track,
+                                'track': ac.get('track'),
                                 'tail_number': aircraft_details["tail_number"],
                                 'model': aircraft_details["model"],
                                 'manufacturer': aircraft_details["manufacturer"],
@@ -158,6 +145,7 @@ def get_data():
 
     print(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
     return jsonify(filtered_data)
+
 
 
 def fetch_aircraft_counts():
