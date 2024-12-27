@@ -287,6 +287,7 @@
             function showAircraftDetails(aircraft) {
                 document.getElementById('aircraft_details_country').textContent = aircraft.country || 'N/A';
                 document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
+                document.getElementById('aircraft_details_tailnumber-head').textContent = aircraft.tail_number || 'N/A';
                 document.getElementById('aircraft_details_model').textContent = aircraft.model || 'N/A';
                 document.getElementById('aircraft_details_alt').textContent = aircraft.altitude ? `${aircraft.altitude} ft` : 'N/A';
                 document.getElementById('aircraft_details_speed').textContent = aircraft.speed ? `${aircraft.speed} kt` : 'N/A';
