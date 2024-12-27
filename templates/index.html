@@ -246,14 +246,13 @@
                         aircraft.model || 'N/A',
                         aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A',
                         aircraft.squawk || 'N/A',
-                        aircraft.track ? aircraft.track + '°' : 'N/A',
                         aircraft.speed ? aircraft.speed + ' kt' : 'N/A',
                         `${aircraft.lat || 'N/A'}, ${aircraft.lon || 'N/A'}`,
                         aircraft.distance_km ? `${aircraft.distance_nm} nm (${aircraft.distance_km} km)` : 'N/A'
-                        //aircraft.seen ? `${aircraft.seen} s ago` : 'N/A'
                     ];
                     content.textContent = detailValues[index];
                     document.getElementById('aircraft_details_last_seen').textContent = aircraft.seen+ 's ago' || "N/A";
+                    document.getElementById('aircraft_details_track').textContent = aircraft.track+ '°' || "N/A";
                 });
             }
 
