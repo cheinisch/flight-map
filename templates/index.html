@@ -147,10 +147,18 @@
             function getIconForPlane(aircraft, isSelected = false) {
                 const color = isSelected ? 'green' : (aircraft.seen > 20 ? 'red' : 'lightcoral');
                 const rotation = aircraft.track || 0;
+
+                const svgIcon = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${rotation}deg);">
+                        <path d="M2 16l6.85 2-2 6 6.85-10-5.7-4-5.7 4 6.85 10-2-6L2 16zm8.77-4.83L13 9l3-3 1 3h4v2h-4l-1 3-3-3z"/>
+                    </svg>
+                `;
+
                 return L.divIcon({
-                    html: `<div style="transform: rotate(${rotation}deg); color: ${color};">✈️</div>`,
-                    className: 'plane-icon',
-                    iconSize: [16, 16]
+                    html: svgIcon,
+                    className: 'plane-icon', // Optional: CSS-Klasse für zusätzliche Anpassungen
+                    iconSize: [32, 32], // Größe des Icons
+                    iconAnchor: [16, 16], // Mittelpunkt des Icons
                 });
             }
 
@@ -159,6 +167,7 @@
                     const response = await fetch('/data');
                     const data = await response.json();
 
+                    // Entferne nicht mehr existierende Marker
                     Object.keys(planeMarkers).forEach(icao => {
                         if (!data.find(plane => plane.icao === icao)) {
                             map.removeLayer(planeMarkers[icao]);
@@ -166,6 +175,7 @@
                         }
                     });
 
+                    // Aktualisiere oder füge neue Marker hinzu
                     data.forEach(aircraft => {
                         if (!aircraft.lat || !aircraft.lon) return;
 
@@ -185,6 +195,7 @@
                     console.error('Error updating planes on the map:', error);
                 }
             }
+
 
             
             async function fetchAircraftCounts() {
