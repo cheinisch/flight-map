@@ -2,11 +2,13 @@ import yaml
 import json
 import time
 from flask import Flask, jsonify, request, render_template
-import socket
 import requests
 from datetime import datetime
 import math
 import logging
+
+# Logging-Konfiguration
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
 # Konfiguration laden
 def load_config(config_path):
@@ -18,115 +20,72 @@ PORT = config['port']
 POSITION = config['position']
 SOURCES = config['sources']
 
-logging.basicConfig(level=logging.DEBUG)
-logging.debug('Debug logging active')
-
 # Flask-App erstellen
 app = Flask(__name__)
 
-# Daten zwischenspeichern
-aircraft_data = {}
-
-# Hilfsfunktion: Flugzeugdaten basierend auf dem ICAO HEX Code abrufen
+# Hilfsfunktion: Flugzeugdetails basierend auf ICAO abrufen
 def fetch_aircraft_details(icao_hex):
-    logging.debug('Loading Aircraft Details')
     api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
-    retries = 3
-    for attempt in range(retries):
-        logging.debug("Run For Loop")
-        try:
-            response = requests.get(api_url, timeout=5)
-            if response.status_code == 200:
-                logging.debug('Response Code 200')
-                logging.debug(api_url)
-                data = response.json()
-                logging.debug(data)
-                return {
-                    "tail_number": aircraft_info.get("Registration", "Unknown"),
-                    "model": aircraft_info.get("Type", "Unknown"),
-                    "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
-                    "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
-                    "owner": aircraft_info.get("RegisteredOwners", "Unknown")
+    try:
+        response = requests.get(api_url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "tail_number": data.get("Registration", "Unknown"),
+                "model": data.get("Type", "Unknown"),
+                "manufacturer": data.get("Manufacturer", "Unknown"),
+                "country": data.get("OperatorFlagCode", "Unknown"),
+                "owner": data.get("RegisteredOwners", "Unknown"),
             }
-            else:
-                print(f"Fehler: HTTP {response.status_code}")
-                return {}
-        except requests.exceptions.RequestException as e:
-            print(f"Verbindungsfehler für {icao_hex}: {e}")
-            time.sleep(2)  # Warte vor dem nächsten Versuch
+    except Exception as e:
+        logging.error(f"Fehler beim Abrufen der Details für {icao_hex}: {e}")
     return {
         "tail_number": "Unknown",
         "model": "Unknown",
         "manufacturer": "Unknown",
         "country": "Unknown",
-        "owner": "Unknown"
+        "owner": "Unknown",
     }
 
+# Hilfsfunktion: Entfernung berechnen
 def calculate_distance(lat1, lon1, lat2, lon2):
-    """Berechnet die Distanz zwischen zwei Punkten auf der Erde in nm und km."""
-    R_km = 6371  # Erdradius in Kilometern
+    R_km = 6371  # Erdradius in km
     R_nm = 3440  # Erdradius in Seemeilen
-
-    # Konvertiere Grad in Radianten
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-
-    # Haversine-Formel
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
+    dlat, dlon = lat2 - lat1, lon2 - lon1
     a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
     c = 2 * math.asin(math.sqrt(a))
+    return R_km * c, R_nm * c
 
-    # Entfernungen
-    distance_km = R_km * c
-    distance_nm = R_nm * c
-
-    return distance_km, distance_nm
-
+# Flugzeugdaten-Endpunkt
 @app.route('/data', methods=['GET'])
 def get_data():
-    """
-    Stellt die Flugzeugdaten bereit, einschließlich der aktuellsten Positionen
-    und zusätzlicher Details wie Tailnummer, Modell und Land.
-    """
     global aircraft_data
-    receiver_lat = POSITION['lat']
-    receiver_lon = POSITION['lon']
+    receiver_lat, receiver_lon = POSITION['lat'], POSITION['lon']
 
-    logging.DEBUG('Open /DATA')
-
-    # Überprüfen, ob die Konfiguration deaktiviert ist
     if receiver_lat == 0.0 and receiver_lon == 0.0:
         return jsonify({"message": "is in config disabled"})
 
-    # Temporäre Struktur für die aktuellsten Daten
     latest_aircraft_data = {}
 
-    # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
-    logging.DEBUG('Open For Loop')
+    # Daten von allen Quellen abrufen
     for source in SOURCES:
-        logging.DEBUG('in For Loop')
         receiver_ip = source['ip']
         dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
         try:
-            logging.DEBUG('GET DATA from Source')
             response = requests.get(dump1090_url, timeout=5)
             if response.status_code == 200:
-                logging.DEBUG('Source REsponse Code 200')
                 data = response.json()
-                logging.DEBUG('----------------------')
-                logging.DEBUG(data)
-                logging.DEBUG('----------------------')
                 for ac in data.get('aircraft', []):
-                    logging.DEBUG('For Loop for Aircraft')
                     icao = ac.get('hex')
                     if icao:
-                        # Falls bereits Daten für dieses ICAO vorhanden sind, nur die aktuellsten verwenden
                         existing = latest_aircraft_data.get(icao)
                         if not existing or ac.get('seen', float('inf')) < existing['seen']:
-                            logging.DEBUG('Befor create JSON')
-                            # Zusätzliche Details von hexdb.io abrufen
-                            aircraft_details = fetch_aircraft_details(icao)
-
+                            details = fetch_aircraft_details(icao)
+                            distance_km, distance_nm = (
+                                calculate_distance(receiver_lat, receiver_lon, ac.get('lat'), ac.get('lon'))
+                                if ac.get('lat') and ac.get('lon') else (None, None)
+                            )
                             latest_aircraft_data[icao] = {
                                 'icao': icao,
                                 'lat': ac.get('lat'),
@@ -139,86 +98,52 @@ def get_data():
                                 'receiver': source['name'],
                                 'receiver_url': dump1090_url,
                                 'track': ac.get('track'),
-                                'tail_number': aircraft_details["tail_number"],
-                                'model': aircraft_details["model"],
-                                'manufacturer': aircraft_details["manufacturer"],
-                                'country': aircraft_details["country"],
-                                'owner': aircraft_details["owner"]
+                                'tail_number': details["tail_number"],
+                                'model': details["model"],
+                                'manufacturer': details["manufacturer"],
+                                'country': details["country"],
+                                'owner': details["owner"],
+                                'distance_km': distance_km,
+                                'distance_nm': distance_nm,
                             }
         except Exception as e:
-            print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
+            logging.error(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
 
-    # Filtere Flugzeuge, die älter als 120 Sekunden sind
+    # Filtere veraltete Daten
     filtered_data = [
         ac for ac in latest_aircraft_data.values()
         if ac.get('seen') is not None and ac['seen'] <= 120
     ]
 
-    print(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
+    logging.debug(f"Gefilterte Flugzeugdaten: {json.dumps(filtered_data, indent=2)}")
     return jsonify(filtered_data)
 
-
-
-def fetch_aircraft_counts():
-    """Zählt die Flugzeuge insgesamt und die mit Positionsdaten."""
-    total_aircraft = 0
-    aircraft_with_position = 0
-    current_time = datetime.utcnow()
-
+# Flugzeugzählungen
+@app.route('/aircraft_counts', methods=['GET'])
+def aircraft_counts():
+    total, with_position = 0, 0
     for source in SOURCES:
         receiver_ip = source['ip']
-        dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
         try:
-            response = requests.get(dump1090_url)
+            response = requests.get(f"http://{receiver_ip}/dump1090/data/aircraft.json", timeout=5)
             if response.status_code == 200:
                 data = response.json()
-                aircraft = data.get('aircraft', [])
-
-                # Filtere Flugzeuge, die in den letzten 120 Sekunden gesehen wurden
-                recent_aircraft = [
-                    ac for ac in aircraft
-                    if 'seen' in ac and ac['seen'] <= 120
-                ]
-
-                total_aircraft = len(recent_aircraft)
-                aircraft_with_position = len([
-                    ac for ac in recent_aircraft
-                    if ac.get('lat') and ac.get('lon')
-                ])
-            else:
-                print(f"Fehler beim Abrufen der Daten von {receiver_ip}: HTTP {response.status_code}")
+                recent = [ac for ac in data.get('aircraft', []) if ac.get('seen') <= 120]
+                total += len(recent)
+                with_position += len([ac for ac in recent if ac.get('lat') and ac.get('lon')])
         except Exception as e:
-            print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
+            logging.error(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
+    return jsonify({'total': total, 'with_position': with_position})
 
-    return {
-        'total': total_aircraft,
-        'with_position': aircraft_with_position
-    }
+# Konfiguration
+@app.route('/config', methods=['GET'])
+def get_config():
+    return jsonify(config)
 
-# Endpunkte definieren
 @app.route('/')
 def index():
     return render_template('index.html', position=POSITION)
 
-@app.route('/aircraft_counts', methods=['GET'])
-def aircraft_counts():
-    """Gibt die Gesamtzahl der Flugzeuge und die mit Positionsdaten zurück."""
-    counts = fetch_aircraft_counts()
-    return jsonify(counts)
-
-@app.route('/sources', methods=['GET'])
-def get_sources():
-    return jsonify([source['name'] for source in SOURCES])
-
-@app.route('/config', methods=['GET'])
-def get_config():
-    try:
-        print('Konfigurationsdaten:', config)  # Debug-Ausgabe
-        return jsonify(config)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 # Anwendung starten
 if __name__ == '__main__':
-    from threading import Thread
-    app.run(host='0.0.0.0', port=PORT)
+    app.run(host='0.0.0.0', port=PORT, debug=True)
