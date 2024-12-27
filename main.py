@@ -92,6 +92,8 @@ def get_data():
     receiver_lat = POSITION['lat']
     receiver_lon = POSITION['lon']
 
+    logging.DEBUG('Open /DATA')
+
     # Überprüfen, ob die Konfiguration deaktiviert ist
     if receiver_lat == 0.0 and receiver_lon == 0.0:
         return jsonify({"message": "is in config disabled"})
@@ -100,19 +102,28 @@ def get_data():
     latest_aircraft_data = {}
 
     # Abrufen der Daten von den Quellen und Aktualisierung von aircraft_data
+    logging.DEBUG('Open For Loop')
     for source in SOURCES:
+        logging.DEBUG('in For Loop')
         receiver_ip = source['ip']
         dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
         try:
+            logging.DEBUG('GET DATA from Source')
             response = requests.get(dump1090_url, timeout=5)
             if response.status_code == 200:
+                logging.DEBUG('Source REsponse Code 200')
                 data = response.json()
+                logging.DEBUG('----------------------')
+                logging.DEBUG(data)
+                logging.DEBUG('----------------------')
                 for ac in data.get('aircraft', []):
+                    logging.DEBUG('For Loop for Aircraft')
                     icao = ac.get('hex')
                     if icao:
                         # Falls bereits Daten für dieses ICAO vorhanden sind, nur die aktuellsten verwenden
                         existing = latest_aircraft_data.get(icao)
                         if not existing or ac.get('seen', float('inf')) < existing['seen']:
+                            logging.DEBUG('Befor create JSON')
                             # Zusätzliche Details von hexdb.io abrufen
                             aircraft_details = fetch_aircraft_details(icao)
 
