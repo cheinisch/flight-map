@@ -18,7 +18,7 @@ PORT = config['port']
 POSITION = config['position']
 SOURCES = config['sources']
 
-logging.basicConfig(level=logging.debug)
+logging.basicConfig(level=logging.DEBUG)
 logging.debug('Debug logging active')
 
 # Flask-App erstellen
