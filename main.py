@@ -25,32 +25,35 @@ aircraft_data = {}
 
 # Hilfsfunktion: Flugzeugdaten basierend auf dem ICAO HEX Code abrufen
 def fetch_aircraft_details(icao_hex):
-    """
-    Ruft zusätzliche Flugzeugdetails wie Tailnummer, Modell und Land ab.
-    """
     api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
-    try:
-        response = requests.get(api_url)
-        if response.status_code == 200:
-            data = response.json()
-            if 'data' in data and len(data['data']) > 0:
-                aircraft_info = data['data'][0]
-                return {
-                    "tail_number": aircraft_info.get("Registration", "Unknown"),
-                    "model": aircraft_info.get("Type", "Unknown"),
-                    "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
-                    "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
-                    "owner": aircraft_info.get("RegisteredOwners", "Unknown")
-                }
-    except Exception as e:
-        print(f"Fehler beim Abrufen der Flugzeugdetails für {icao_hex}: {e}")
+    retries = 3
+    for attempt in range(retries):
+        try:
+            response = requests.get(api_url, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if 'data' in data and len(data['data']) > 0:
+                    aircraft_info = data['data'][0]
+                    return {
+                        "tail_number": aircraft_info.get("Registration", "Unknown"),
+                        "model": aircraft_info.get("Type", "Unknown"),
+                        "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
+                        "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
+                        "owner": aircraft_info.get("RegisteredOwners", "Unknown")
+                    }
+            else:
+                print(f"Fehler: HTTP {response.status_code}")
+                return {}
+        except requests.exceptions.RequestException as e:
+            print(f"Verbindungsfehler für {icao_hex}: {e}")
+            time.sleep(2)  # Warte vor dem nächsten Versuch
     return {
         "tail_number": "Unknown",
         "model": "Unknown",
-        "country": "Unknown",
         "manufacturer": "Unknown",
+        "country": "Unknown",
         "owner": "Unknown"
-}
+    }
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Berechnet die Distanz zwischen zwei Punkten auf der Erde in nm und km."""
