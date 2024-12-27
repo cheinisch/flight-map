@@ -38,6 +38,7 @@ def fetch_aircraft_details(icao_hex):
             response = requests.get(api_url, timeout=5)
             if response.status_code == 200:
                 logging.debug('Response Code 200')
+                logging.debug(api_url)
                 data = response.json()
                 if 'data' in data and len(data['data']) > 0:
                     logging.debug('Data Length > 0')
