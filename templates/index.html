@@ -136,7 +136,17 @@
             let planeMarkers = {};
 
             function getPlaneIcon(aircraft, isSelected = false) {
-                const color = isSelected ? 'green' : (aircraft.seen > 5 ? 'lightcoral' : 'aquamarine');
+                
+                // Prüfe auf Squawk 7X00
+                if (aircraft.squawk && aircraft.squawk.startsWith('7')) {
+                    color = 'yellow'; // Gelb für Squawk 7X00
+                } else {
+                    color = isSelected
+                        ? 'green' // Grün für ausgewählte Flugzeuge
+                        : aircraft.seen > 20
+                            ? 'lightcoral' // Rot für inaktive Flugzeuge (>20 Sekunden nicht gesehen)
+                            : 'aquamarine'; // Standard
+                }
                 const rotation = aircraft.track || 0; // Track-Winkel in Grad
                 return L.divIcon({
                     html: `
