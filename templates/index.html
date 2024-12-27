@@ -58,6 +58,11 @@
             .hidden {
                 display: none;
             }
+            @media only screen and (max-width: 900px) {
+                .hide_mobile{
+                    display: none;
+                }
+            }
         </style>
     </head>
     <body class="uk-light uk-background-secondary">
@@ -120,7 +125,7 @@
                         <thead>
                             <tr>
                                 <th>ICAO</th>
-                                <th>Country</th>
+                                <th class="hide_mobile">Country</th>
                                 <th>Flight</th>
                                 <th>Altitude</th>
                                 <th>Speed</th>
@@ -180,7 +185,7 @@
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
                                     <td>${aircraft.icao || 'N/A'}</td>
-                                    <td>${aircraft.country || ''}</td>
+                                    <td Class="hide_mobile">${aircraft.country || ''}</td>
                                     <td>${aircraft.flight || ''}</td>
                                     <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
                                     <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
