@@ -28,7 +28,7 @@ def fetch_aircraft_details(icao_hex):
     """
     Ruft zusätzliche Flugzeugdetails wie Tailnummer, Modell und Land ab.
     """
-    api_url = f"https://api.planespotters.net/public/v1/hex/{icao_hex}"
+    api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
     try:
         response = requests.get(api_url)
         if response.status_code == 200:
@@ -36,16 +36,20 @@ def fetch_aircraft_details(icao_hex):
             if 'data' in data and len(data['data']) > 0:
                 aircraft_info = data['data'][0]
                 return {
-                    "tail_number": aircraft_info.get("reg", "Unknown"),
-                    "model": aircraft_info.get("type", "Unknown"),
-                    "country": aircraft_info.get("country", "Unknown")
+                    "tail_number": aircraft_info.get("Registration", "Unknown"),
+                    "model": aircraft_info.get("Type", "Unknown"),
+                    "manufacturer": aircraft_info.get("Manufacturer", "Unknown"),
+                    "country": aircraft_info.get("OperatorFlagCode", "Unknown"),
+                    "owner": aircraft_info.get("RegisteredOwners", "Unknown")
                 }
     except Exception as e:
         print(f"Fehler beim Abrufen der Flugzeugdetails für {icao_hex}: {e}")
     return {
         "tail_number": "Unknown",
         "model": "Unknown",
-        "country": "Unknown"
+        "country": "Unknown",
+        "manufacturer": "Unknown",
+        "owner": "Unknown"
 }
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -70,11 +74,13 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
 @app.route('/data', methods=['GET'])
 def get_data():
+    """
+    Stellt die Flugzeugdaten bereit, einschließlich der aktuellsten Positionen
+    und zusätzlicher Details wie Tailnummer, Modell und Land.
+    """
     global aircraft_data
     receiver_lat = POSITION['lat']
     receiver_lon = POSITION['lon']
-
-    print("test")
 
     # Überprüfen, ob die Konfiguration deaktiviert ist
     if receiver_lat == 0.0 and receiver_lon == 0.0:
@@ -87,9 +93,8 @@ def get_data():
     for source in SOURCES:
         receiver_ip = source['ip']
         dump1090_url = f"http://{receiver_ip}/dump1090/data/aircraft.json"
-        dump1090_webinterface = f"http://{receiver_ip}/dump1090/gmap.html"
         try:
-            response = requests.get(dump1090_url)
+            response = requests.get(dump1090_url, timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 for ac in data.get('aircraft', []):
@@ -106,6 +111,9 @@ def get_data():
                             if lat is not None and lon is not None:
                                 distance_km, distance_nm = calculate_distance(receiver_lat, receiver_lon, lat, lon)
 
+                            # Zusätzliche Details abrufen
+                            aircraft_details = fetch_aircraft_details(icao)
+
                             # Track hinzufügen
                             track = ac.get('track')
 
@@ -121,8 +129,13 @@ def get_data():
                                 'distance_km': round(distance_km, 2) if distance_km else None,
                                 'distance_nm': round(distance_nm, 2) if distance_nm else None,
                                 'receiver': source['name'],
-                                'receiver_url': dump1090_webinterface,
-                                'track': track
+                                'receiver_url': dump1090_url,
+                                'track': track,
+                                'tail_number': aircraft_details["tail_number"],
+                                'model': aircraft_details["model"],
+                                'manufacturer': aircraft_details["manufacturer"],
+                                'country': aircraft_details["country"],
+                                'owner': aircraft_details["owner"]
                             }
         except Exception as e:
             print(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
