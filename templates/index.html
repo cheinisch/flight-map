@@ -138,7 +138,11 @@
             function getPlaneIcon(aircraft, isSelected = false) {
                 
                 // Prüfe auf Squawk 7X00
-                if (aircraft.squawk && aircraft.squawk.startsWith('7')) {
+                if (aircraft.squawk && aircraft.squawk.startsWith('7500')) {
+                    color = 'yellow'; // Gelb für Squawk 7X00
+                } else if (aircraft.squawk && aircraft.squawk.startsWith('7600')) {
+                    color = 'yellow'; // Gelb für Squawk 7X00
+                } else if (aircraft.squawk && aircraft.squawk.startsWith('7700')) {
                     color = 'yellow'; // Gelb für Squawk 7X00
                 } else {
                     color = isSelected
