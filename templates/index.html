@@ -145,7 +145,7 @@
             let planeMarkers = {};
 
             function getPlaneIcon(aircraft, isSelected = false) {
-                const color = isSelected ? 'green' : (aircraft.seen > 20 ? 'aquamarine' : 'lightcoral');
+                const color = isSelected ? 'green' : (aircraft.seen > 5 ? 'lightcoral' : 'aquamarine');
                 const rotation = aircraft.track || 0; // Track-Winkel in Grad
                 return L.divIcon({
                     html: `
