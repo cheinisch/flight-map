@@ -55,7 +55,9 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     dlat, dlon = lat2 - lat1, lon2 - lon1
     a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
     c = 2 * math.asin(math.sqrt(a))
-    return R_km * c, R_nm * c
+    distance_km = round(R_km * c, 2)
+    distance_nm = round(R_nm * c, 2)
+    return distance_km, distance_nm
 
 # Flugzeugdaten-Endpunkt
 @app.route('/data', methods=['GET'])
