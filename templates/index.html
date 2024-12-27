@@ -194,7 +194,19 @@
             }
 
 
+            async function updateTitle() {
+                try {
+                    const response = await fetch('/aircraft_counts');
+                    const counts = await response.json();
 
+                    // Aktualisiere die Titelzeile
+                    const total = counts.total || 0;
+                    const withPosition = counts.with_position || 0;
+                    document.title = `Flightmap // Aircrafts ${total}/${withPosition}`;
+                } catch (error) {
+                    console.error('Fehler beim Aktualisieren der Titelzeile:', error);
+                }
+            }
             
             async function fetchAircraftCounts() {
                 try {
@@ -310,6 +322,7 @@
             setInterval(updatePlanesOnMap, 5000);
             setInterval(fetchAircraftCounts, 2000);
             setInterval(fetchAircraftData, 2000);
+            setInterval(updateTitle, 2000);
         </script>
     </body>
 </html>
