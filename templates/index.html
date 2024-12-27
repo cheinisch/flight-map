@@ -78,27 +78,27 @@
                     <br />
                     <div class="aircraft-details uk-grid-column-small" uk-grid>
                         <div class="uk-width-1-1">
-                            <h3>Aircraft ID</h3>
+                            <h3>Aircraft ID <div id="aircraft_details_tailnumber"></div></h3>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Country of Registration</div>
                             <div class="content aircraft_data_bottom">10 nm</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
-                            <div class="title">Tailnumber</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div class="title">Tail-number</div>
+                            <div id="aircraft_details_tailnumber" class="content aircraft_data_bottom">D-XXXXX</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Model</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_model" class="content aircraft_data_bottom">XXXXX</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Altitude</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_alt" class="content aircraft_data_bottom">10 ft</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Squawk</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_squawk" class="content aircraft_data_bottom">1234</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Track</div>
@@ -106,15 +106,15 @@
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Speed</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_speed" class="content aircraft_data_bottom">10 kt</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Position</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_pos" class="content aircraft_data_bottom">0.0 0.0</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Distance</div>
-                            <div class="content aircraft_data_bottom">10 nm</div>
+                            <div id="aircraft_details_distance" class="content aircraft_data_bottom">10 nm</div>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Last seen</div>
@@ -242,17 +242,17 @@
                 document.querySelectorAll('.aircraft-details .content').forEach((content, index) => {
                     const detailValues = [
                         aircraft.country || 'N/A',
-                        aircraft.tail_number || 'N/A',
-                        aircraft.model || 'N/A',
-                        aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A',
-                        aircraft.squawk || 'N/A',
-                        aircraft.speed ? aircraft.speed + ' kt' : 'N/A',
                         `${aircraft.lat || 'N/A'}, ${aircraft.lon || 'N/A'}`,
                         aircraft.distance_km ? `${aircraft.distance_nm} nm (${aircraft.distance_km} km)` : 'N/A'
                     ];
                     content.textContent = detailValues[index];
                     document.getElementById('aircraft_details_last_seen').textContent = aircraft.seen+ 's ago' || "N/A";
                     document.getElementById('aircraft_details_track').textContent = aircraft.track+ '°' || "N/A";
+                    document.getElementById('aircraft_details_squawk').textContent = aircraft.squawk || 'N/A';
+                    document.getElementById('aircraft_details_model').textContent = aircraft.model || 'N/A';
+                    document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
+                    document.getElementById('aircraft_details_alt').textContent = aircraft.altitude + ' ft' || 'N/A';
+                    document.getElementById('aircraft_details_speed').textContent = aircraft.speed + ' kt' || 'N/A';
                 });
             }
 
