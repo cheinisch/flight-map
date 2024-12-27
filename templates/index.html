@@ -78,7 +78,7 @@
                     <br />
                     <div class="aircraft-details uk-grid-column-small" uk-grid>
                         <div class="uk-width-1-1">
-                            <h3>Aircraft ID <span id="aircraft_details_tailnumber"></span></h3>
+                            <h3>Aircraft ID <span id="aircraft_details_tailnumber-head"></span></h3>
                         </div>
                         <div class="uk-width-1-2 uk-width-1-3@s uk-width-1-3@m uk-width-1-3@l aircraft_data">
                             <div class="title">Country of Registration</div>
@@ -142,7 +142,7 @@
 
             let map;
             let planeMarkers = {};
-            
+
             function getIconForPlane(aircraft, isSelected = false) {
                 const baseColor = isSelected ? 'green' : (aircraft.seen > 20 ? 'red' : 'lightcoral');
                 const rotation = aircraft.track || 0;
@@ -306,8 +306,10 @@
             fetchConfigAndInitMap();
             fetchAircraftCounts();
             fetchAircraftData();
+            updatePlanesOnMap();
 
             // Daten regelmäßig aktualisieren
+            setInterval(updatePlanesOnMap, 5000);
             setInterval(fetchAircraftCounts, 2000);
             setInterval(fetchAircraftData, 2000);
         </script>
