@@ -30,26 +30,44 @@ sudo -u "$USER" git clone "$REPO_URL" "$INSTALL_DIR" || {
     cd "$INSTALL_DIR" && sudo -u "$USER" git pull
 }
 
+# Eigene Koordinaten abfragen
+echo "Geben Sie Ihre Koordinaten ein (im Format DD.DDD). Standard ist 0.0 für beide Werte."
+read -p "Breitengrad (Latitude, Standard: 0.0): " LAT
+LAT=${LAT:-0.0}
+read -p "Längengrad (Longitude, Standard: 0.0): " LON
+LON=${LON:-0.0}
+
+# Receiver abfragen
+RECEIVERS=()
+echo "Konfigurieren Sie die Receiver. Lassen Sie die IP-Adresse leer, um keine weiteren Receiver hinzuzufügen."
+while true; do
+    read -p "Receiver IP-Adresse (leer lassen, um fertigzustellen): " RECEIVER_IP
+    if [[ -z "$RECEIVER_IP" ]]; then
+        break
+    fi
+    read -p "Receiver Bezeichnung: " RECEIVER_NAME
+    RECEIVERS+=("- name: \"$RECEIVER_NAME\"")
+    RECEIVERS+=("  ip: \"$RECEIVER_IP\"")
+    RECEIVERS+=("  port: 30003")
+done
+
+# Konfigurationsdatei erstellen
+echo "Erstelle Konfigurationsdatei..."
+{
+    echo "port: $PORT"
+    echo "position:"
+    echo "  lat: $LAT"
+    echo "  lon: $LON"
+    echo "sources:"
+    for RECEIVER in "${RECEIVERS[@]}"; do
+        echo "  $RECEIVER"
+    done
+} | sudo tee "$INSTALL_DIR/config.yaml"
+
 # Virtuelle Umgebung erstellen und Abhängigkeiten installieren
 echo "Richte virtuelle Umgebung ein..."
 sudo -u "$USER" python3 -m venv "$INSTALL_DIR/venv"
 sudo -u "$USER" "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
-
-# Konfigurationsdatei erstellen
-echo "Erstelle Konfigurationsdatei..."
-cat <<EOF | sudo tee "$INSTALL_DIR/config.yaml"
-port: $PORT
-position:
-  lat: 50.0357
-  lon: 7.9491
-sources:
-  - name: "VM"
-    ip: 10.0.5.10
-    port: 30003
-  - name: "Pi"
-    ip: 10.0.5.12
-    port: 30003
-EOF
 
 # Systemd-Dienst erstellen
 echo "Erstelle Systemd-Dienst..."
@@ -61,7 +79,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$INSTALL_DIR
-ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py
+ExecStart=$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/main.py --config $INSTALL_DIR/config.yaml
 Restart=always
 
 [Install]
