@@ -22,7 +22,7 @@ A real-time flight tracking application that uses data from ADS-B receivers and 
 
 1. Clone the repository:
    ```bash
-   `wget -qO- https://raw.githubusercontent.com/cheinisch/flight-map/refs/heads/main/install.sh | sudo bash -s`
+   wget -qO- https://raw.githubusercontent.com/cheinisch/flight-map/refs/heads/main/install.sh | sudo bash -s
    cd /opt/flightmap
    ```
 
