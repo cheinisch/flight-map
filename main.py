@@ -74,6 +74,8 @@ def get_data():
     receiver_lat = POSITION['lat']
     receiver_lon = POSITION['lon']
 
+    print("test")
+
     # Überprüfen, ob die Konfiguration deaktiviert ist
     if receiver_lat == 0.0 and receiver_lon == 0.0:
         return jsonify({"message": "is in config disabled"})
