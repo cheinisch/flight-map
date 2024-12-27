@@ -142,6 +142,49 @@
 
             let map;
             let planeMarkers = {};
+            
+            function getIconForPlane(aircraft, isSelected = false) {
+                const baseColor = isSelected ? 'green' : (aircraft.seen > 20 ? 'red' : 'lightcoral');
+                const rotation = aircraft.track || 0;
+                return L.divIcon({
+                    html: `<div style="transform: rotate(${rotation}deg); color: ${baseColor};">✈️</div>`,
+                    className: 'plane-icon',
+                    iconSize: [16, 16]
+                });
+            }
+
+            async function updatePlanesOnMap() {
+                try {
+                    const response = await fetch('/data');
+                    const data = await response.json();
+
+                    // Entferne Marker, die nicht mehr vorhanden sind
+                    Object.keys(planeMarkers).forEach(icao => {
+                        if (!data.find(plane => plane.icao === icao)) {
+                            map.removeLayer(planeMarkers[icao]);
+                            delete planeMarkers[icao];
+                        }
+                    });
+
+                    // Aktualisiere oder füge neue Marker hinzu
+                    data.forEach(aircraft => {
+                        if (!aircraft.lat || !aircraft.lon) return;
+
+                        const isSelected = localStorage.getItem('highlightedAircraft') === aircraft.icao;
+
+                        if (planeMarkers[aircraft.icao]) {
+                            planeMarkers[aircraft.icao].setLatLng([aircraft.lat, aircraft.lon])
+                                .setIcon(getIconForPlane(aircraft, isSelected));
+                        } else {
+                            const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getIconForPlane(aircraft, isSelected) }).addTo(map);
+                            marker.on('click', () => selectAircraft(aircraft.icao));
+                            planeMarkers[aircraft.icao] = marker;
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error updating planes on the map:', error);
+                }
+            }
 
             async function fetchConfigAndInitMap() {
                 try {
@@ -181,8 +224,6 @@
                             const table = document.getElementById('aircraft_table');
                             const detailsContainer = document.querySelector('.aircraft-details');
                             const highlightedIcao = localStorage.getItem('highlightedAircraft'); // Aus localStorage laden
-
-                            updatePlanesOnMap(data);
 
                             table.innerHTML = ''; // Tabelle leeren
                             let aircraftSelected = false;
@@ -256,41 +297,6 @@
                     document.getElementById('aircraft_details_distance').textContent = aircraft.distance_km ? `${aircraft.distance_nm} nm (${aircraft.distance_km} km)` : 'N/A';
                     document.getElementById('aircraft_details_pos').textContent = `${aircraft.lat || 'N/A'}, ${aircraft.lon || 'N/A'}`;
                     document.getElementById('aircraft_details_country').textContent = aircraft.country || 'N/A';
-                });
-            }
-
-            function getIconForPlane(aircraft, isSelected = false) {
-                const baseColor = isSelected ? 'green' : (aircraft.seen > 20 ? 'red' : 'lightcoral');
-                const rotation = aircraft.track || 0;
-                return L.divIcon({
-                    html: `<div style="transform: rotate(${rotation}deg); color: ${baseColor};">✈️</div>`,
-                    className: 'plane-icon',
-                    iconSize: [16, 16]
-                });
-            }
-
-
-            function updatePlanesOnMap(data) {
-                Object.keys(planeMarkers).forEach(icao => {
-                    if (!data.find(plane => plane.icao === icao)) {
-                        map.removeLayer(planeMarkers[icao]);
-                        delete planeMarkers[icao];
-                    }
-                });
-
-                data.forEach(aircraft => {
-                    if (!aircraft.lat || !aircraft.lon) return;
-
-                    const isSelected = localStorage.getItem('highlightedAircraft') === aircraft.icao;
-
-                    if (planeMarkers[aircraft.icao]) {
-                        planeMarkers[aircraft.icao].setLatLng([aircraft.lat, aircraft.lon])
-                            .setIcon(getIconForPlane(aircraft, isSelected));
-                    } else {
-                        const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getIconForPlane(aircraft, isSelected) }).addTo(map);
-                        marker.on('click', () => selectAircraft(aircraft.icao));
-                        planeMarkers[aircraft.icao] = marker;
-                    }
                 });
             }
 
