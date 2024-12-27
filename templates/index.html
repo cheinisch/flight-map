@@ -213,14 +213,14 @@
 
                             data.forEach(aircraft => {
                                 const row = document.createElement('tr');
-                                row.innerHTML = 
+                                row.innerHTML = `
                                     <td>${aircraft.icao || 'N/A'}</td>
                                     <td class="hide_mobile">${aircraft.country || ''}</td>
                                     <td>${aircraft.flight || ''}</td>
                                     <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
                                     <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
                                     <td>${aircraft.squawk || ''}</td>
-                                ;
+                                `;
 
                                 // Highlight wiederherstellen, falls ICAO übereinstimmt
                                 if (aircraft.icao === highlightedIcao) {
