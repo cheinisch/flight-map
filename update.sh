@@ -1,27 +1,38 @@
 #!/bin/bash
 
+# Konfiguration
+REPO_URL="https://github.com/cheinisch/flight-map.git"  # Repository-URL
+INSTALL_DIR="/opt/flight-map"
+SERVICE_NAME="flight-map"
 
-echo "Starte Update des Dienstes..."
-REPO_URL="https://github.com/cheinisch/flight-map.git"
-PORT=8080
+echo "Update des Flight-Map-Dienstes gestartet..."
 
-# Projektverzeichnis aktualisieren
-echo "Lade neueste Version von GitHub herunter..."
-sudo -u $USER git -C $INSTALL_DIR pull || sudo -u $USER git clone $REPO_URL $INSTALL_DIR
+# Aktuelles Verzeichnis sichern
+cd "$INSTALL_DIR" || { echo "Installationsverzeichnis $INSTALL_DIR nicht gefunden."; exit 1; }
 
-# Sicherstellen, dass config.yaml nicht überschrieben wird
-echo "Konfigurationsdatei wird beibehalten..."
-CONFIG_FILE="$INSTALL_DIR/config.yaml"
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "WARNUNG: Keine bestehende Konfigurationsdatei gefunden!"
-fi
+# Entferne alle Dateien außer update.sh und config.yaml
+echo "Entferne alte Dateien außer config.yaml und update.sh..."
+find . -mindepth 1 ! -name 'update.sh' ! -name 'config.yaml' -exec rm -rf {} +
 
-# Virtuelle Umgebung aktualisieren
-echo "Aktualisiere Abhängigkeiten..."
-sudo -u $USER $INSTALL_DIR/venv/bin/pip install -r $INSTALL_DIR/requirements.txt
+# Repository neu klonen
+echo "Klone das Repository neu..."
+git clone "$REPO_URL" temp_repo || { echo "Fehler beim Klonen des Repositories."; exit 1; }
+mv temp_repo/* .
+mv temp_repo/.* . 2>/dev/null
+rmdir temp_repo
 
-# Dienst neu starten
-echo "Starte Dienst neu..."
-sudo systemctl restart $SERVICE_NAME
+# Virtuelle Umgebung neu einrichten
+echo "Richte virtuelle Umgebung ein..."
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt || { echo "Fehler beim Installieren der Abhängigkeiten."; exit 1; }
+deactivate
 
-echo "Update abgeschlossen."
+# Systemd-Dienst neu starten
+echo "Setze den Systemd-Dienst neu auf..."
+sudo systemctl stop "$SERVICE_NAME"
+sudo systemctl daemon-reload
+sudo systemctl start "$SERVICE_NAME"
+
+# Erfolgsmeldung
+echo "Update abgeschlossen! Flight-Map-Dienst läuft unter http://<server-ip>"
