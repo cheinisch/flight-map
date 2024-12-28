@@ -121,7 +121,7 @@
                                 <th>Altitude</th>
                                 <th>Speed</th>
                                 <th>Squawk</th>
-                                <th>Receiver</th>
+                                <th class="hide_mobile">Receiver</th>
                             </tr>
                         </thead>
                         <tbody id="aircraft_table">
@@ -246,7 +246,7 @@
                                     <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
                                     <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
                                     <td>${aircraft.squawk || ''}</td>
-                                    <td>${aircraft.receiver}</td>
+                                    <td class="hide_mobile">${aircraft.receiver}</td>
                                 `;
 
                                 // Highlight wiederherstellen, falls ICAO übereinstimmt
