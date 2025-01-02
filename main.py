@@ -142,6 +142,21 @@ def aircraft_counts():
 def get_config():
     return jsonify(config)
 
+@app.route('/history', methods=['GET'])
+def get_history():
+    """
+    Gibt die Flugzeughistorie als JSON zurück.
+    """
+    try:
+        with open(HISTORY_FILE, 'r') as file:
+            reader = csv.DictReader(file)
+            history_data = list(reader)
+
+        # Konvertiere die CSV-Daten in ein JSON-kompatibles Format
+        return jsonify(history_data)
+    except Exception as e:
+        return jsonify({'error': f"Error loading history: {e}"}), 500
+
 @app.route('/')
 def index():
     return render_template('index.html', position=POSITION)
