@@ -59,6 +59,44 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     distance_nm = round(R_nm * c, 2)
     return distance_km, distance_nm
 
+# Hilfsfunktion History
+def update_aircraft_history(aircraft):
+    """
+    Aktualisiert die Flugzeughistorie in der CSV-Datei.
+    """
+    updated_data = []
+    icao_found = False
+    with open(HISTORY_FILE, 'r') as file:
+        reader = csv.DictReader(file)
+        updated_data = list(reader)
+    
+    # Überprüfe, ob das Flugzeug bereits vorhanden ist
+    for record in updated_data:
+        if record['icao'] == aircraft['icao']:
+            record.update({
+                'tail_number': aircraft.get('tail_number', 'Unknown'),
+                'manufacturer': aircraft.get('manufacturer', 'Unknown'),
+                'model': aircraft.get('model', 'Unknown'),
+                'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+            icao_found = True
+    
+    # Falls nicht vorhanden, füge das Flugzeug hinzu
+    if not icao_found:
+        updated_data.append({
+            'icao': aircraft['icao'],
+            'tail_number': aircraft.get('tail_number', 'Unknown'),
+            'manufacturer': aircraft.get('manufacturer', 'Unknown'),
+            'model': aircraft.get('model', 'Unknown'),
+            'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    # Schreibe die aktualisierte Liste zurück in die Datei
+    with open(HISTORY_FILE, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'last_seen'])
+        writer.writeheader()
+        writer.writerows(updated_data)
+
 # Flugzeugdaten-Endpunkt
 @app.route('/data', methods=['GET'])
 def get_data():
@@ -69,6 +107,10 @@ def get_data():
         return jsonify({"message": "is in config disabled"})
 
     latest_aircraft_data = {}
+    
+    # Hier wird jedes Flugzeug aktualisiert
+    for aircraft in latest_aircraft_data.values():
+        update_aircraft_history(aircraft)
 
     # Daten von allen Quellen abrufen
     for source in SOURCES:
