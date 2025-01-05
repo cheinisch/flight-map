@@ -1,0 +1,26 @@
+{
+    "prefixes": [
+        { "prefix": "N", "country": "United States" },
+        { "prefix": "D", "country": "Germany" },
+        { "prefix": "G", "country": "United Kingdom" },
+        { "prefix": "F", "country": "France" },
+        { "prefix": "VH", "country": "Australia" },
+        { "prefix": "C", "country": "Canada" },
+        { "prefix": "JA", "country": "Japan" },
+        { "prefix": "OE", "country": "Austria" },
+        { "prefix": "9A", "country": "Croatia" },
+        { "prefix": "HB", "country": "Switzerland" },
+        { "prefix": "EI", "country": "Ireland" },
+        { "prefix": "EC", "country": "Spain" },
+        { "prefix": "OO", "country": "Belgium" },
+        { "prefix": "ZS", "country": "South Africa" },
+        { "prefix": "A6", "country": "United Arab Emirates" },
+        { "prefix": "PK", "country": "Indonesia" },
+        { "prefix": "B", "country": "China" },
+        { "prefix": "HL", "country": "South Korea" },
+        { "prefix": "VT", "country": "India" },
+        { "prefix": "HS", "country": "Thailand" },
+        { "prefix": "TC", "country": "Turkey" },
+        { "prefix": "YR", "country": "Romania" }
+    ]
+}

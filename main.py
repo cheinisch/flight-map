@@ -89,6 +89,16 @@ def get_icao_name(operator_flag_code):
         "airline": "Unknown"
     }
 
+def get_country_from_tail_number(tail_number):
+    if not tail_number:
+        return "Unknown"
+    with open('config/registration_prefixes.json', 'r') as file:
+        prefixes = json.load(file)['prefixes']
+    for entry in prefixes:
+        if tail_number.startswith(entry['prefix']):
+            return entry['country']
+    return "Unknown"
+
 # Hilfsfunktion: Flugzeugdetails basierend auf ICAO abrufen
 def fetch_aircraft_details(icao_hex):
     api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
@@ -248,6 +258,7 @@ def get_data():
                                 calculate_distance(receiver_lat, receiver_lon, ac.get('lat'), ac.get('lon'))
                                 if ac.get('lat') and ac.get('lon') else (None, None)
                             )
+                            reg_country = get_country_from_tail_number(details["tail_number"])
                             latest_aircraft_data[icao] = {
                                 'icao': icao,
                                 'lat': ac.get('lat'),
@@ -261,6 +272,7 @@ def get_data():
                                 'receiver_url': dump1090_url,
                                 'track': ac.get('track'),
                                 'tail_number': details["tail_number"],
+                                'registration_country': reg_country,
                                 'model': details["model"],
                                 'manufacturer': details["manufacturer"],
                                 'icao_operator_flag': details["icao_operator_flag"],
