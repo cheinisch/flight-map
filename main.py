@@ -95,14 +95,14 @@ def fetch_aircraft_details(icao_hex):
             operator_flag_code = data.get("OperatorFlagCode", "Unknown")
             country_name = get_country_name(operator_flag_code)
             # Füge den Ländernamen nur in den Details hinzu
-            country_details = f"{operator_flag_code} ({country_name})" if country_name else operator_flag_code
+            country_details = f"{operator_flag_code} ({country_name['country']})" if country_name['country'] else operator_flag_code
             return {
                 "tail_number": data.get("Registration", "Unknown"),
                 "model": data.get("Type", "Unknown"),
                 "manufacturer": data.get("Manufacturer", "Unknown"),
                 "country": operator_flag_code,  # Nur den Code für die Tabelle
                 "country_details": country_details,  # Land + Code für die Details
-                "airline": airline,  # Land + Code für die Details
+                "airline": country_name['airline'],  # Land + Code für die Details
                 "owner": data.get("RegisteredOwners", "Unknown"),
             }
     except Exception as e:
@@ -113,6 +113,7 @@ def fetch_aircraft_details(icao_hex):
         "manufacturer": "Unknown",
         "country": "Unknown",
         "country_details": "Unknown",
+        "airline":"Unknown",
         "owner": "Unknown",
     }
 
