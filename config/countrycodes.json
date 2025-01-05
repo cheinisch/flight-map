@@ -1,7 +1,8 @@
-{
-    "AUA": "Austria",
-    "DLH": "Germany",
-    "BAW": "United Kingdom",
-    "AFR": "France",
-    "KLM": "Netherlands"
-}
+[
+    {"code": "DLH", "name": "Germany"},
+    {"code": "BAW", "name": "United Kingdom"},
+    {"code": "AAL", "name": "United States"},
+    {"code": "AFR", "name": "France"},
+    {"code": "KLM", "name": "Netherlands"},
+    {"code": "AUA", "name": "Austria"}
+]
