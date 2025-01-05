@@ -7,6 +7,7 @@ BACKUP_DIR="/opt/flight-map-backups"
 SERVICE_NAME="flight-map"
 USER="flightmapuser"
 PORT=8080
+HISTORY_FILE="$INSTALL_DIR/user-config/aircraft_history.csv"
 
 # Voraussetzungen prüfen
 echo "Prüfe Voraussetzungen..."
@@ -65,6 +66,18 @@ sources:
 EOF
 
     echo "Konfigurationsdatei erstellt unter $CONFIG_FILE."
+fi
+
+# Prüfen, ob die History-Datei existiert
+if [ -f "$HISTORY_FILE" ]; then
+    echo "History-Datei existiert bereits unter $HISTORY_FILE. Keine neue Datei wird erstellt."
+else
+    echo "Erstelle History-Datei..."
+    mkdir -p "$(dirname "$HISTORY_FILE")"
+    cat <<EOF | sudo tee "$HISTORY_FILE"
+icao,tail_number,manufacturer,model,last_seen
+EOF
+    echo "History-Datei erstellt unter $HISTORY_FILE."
 fi
 
 # Systemd-Dienst erstellen
