@@ -207,8 +207,17 @@ async function fetchSquawkColors() {
             console.error('Failed to fetch squawk colors:', response.statusText);
             return;
         }
-        squawkColors = await response.json();
-        console.log('Loaded squawk colors:', squawkColors); // Debugging
+
+        const squawkData = await response.json();
+        console.log('Loaded squawk colors:', squawkData); // Debugging
+
+        // Konvertiere das Array in ein Objekt für schnellen Zugriff
+        squawkColors = squawkData.reduce((acc, item) => {
+            acc[item.squawk] = item.color;
+            return acc;
+        }, {});
+        
+        console.log('Converted squawk colors:', squawkColors); // Debugging
     } catch (error) {
         console.error('Error fetching squawk colors:', error);
     }
