@@ -2,10 +2,12 @@
     {"code": "DLH", "name": "Germany", "airline": "Lufthansa"},
     {"code": "CLH", "name": "Germany", "airline": "Lufthansa CityLine"},
     {"code": "LHX", "name": "Germany", "airline": "Lufthansa CityLine"},
+    {"code": "CFG", "name": "Germany", "airline": "Condor Flugdienst"},
     {"code": "BAW", "name": "United Kingdom", "airline": "British Airways"},
     {"code": "AAL", "name": "United States", "airline": "American Airlines"},
     {"code": "AFR", "name": "France", "airline": "Air France"},
     {"code": "KLM", "name": "Netherlands", "airline": "KLM Royal Dutch Airlines"},
+    {"code": "KLC", "name": "Netherlands", "airline": "KLM Cityhopper"},
     {"code": "AUA", "name": "Austria", "airline": "Austrian Airlines"},
     {"code": "SWR", "name": "Switzerland", "airline": "Swiss International Air Lines"},
     {"code": "QFA", "name": "Australia", "airline": "Qantas"},
@@ -19,5 +21,6 @@
     {"code": "SAS", "name": "Scandinavia", "airline": "Scandinavian Airlines"},
     {"code": "LHG", "name": "Germany", "airline": "Lufthansa Group"},
     {"code": "LOT", "name": "Poland", "airline": "LOT Polish Airlines"},
-    {"code": "FIN", "name": "Finland", "airline": "Finnair"}
+    {"code": "FIN", "name": "Finland", "airline": "Finnair"},
+    {"code": "LZB", "name": "Bulgaria", "airline": "Bulgaria Air"}
 ]

@@ -44,13 +44,13 @@ SOURCES = config['sources']
 app = Flask(__name__, static_folder='static')
 
 # JSON-Datei für Country Codes
-COUNTRY_CODES_FILE = os.path.join(os.getcwd(), 'config', 'countrycodes.json')
+COUNTRY_CODES_FILE = os.path.join(os.getcwd(), 'config', 'icaocodes.json')
 
 # Route für Country Codes
 @app.route('/countrycode', methods=['GET'])
 def get_country_codes():
     """
-    Gibt die countrycodes.json-Datei zurück.
+    Gibt die icaocodes.json-Datei zurück.
     """
     if os.path.exists(COUNTRY_CODES_FILE):
         try:
@@ -58,15 +58,15 @@ def get_country_codes():
                 country_codes = json.load(file)
             return jsonify(country_codes)
         except Exception as e:
-            return jsonify({"error": f"Error reading countrycodes.json: {str(e)}"}), 500
+            return jsonify({"error": f"Error reading icaocodes.json: {str(e)}"}), 500
     else:
-        return jsonify({"error": "countrycodes.json not found"}), 404
+        return jsonify({"error": "icaocodes.json not found"}), 404
 
 
 # Hilfsfunktion: Ländername basierend auf dem Code abrufen
 def get_country_name(operator_flag_code):
     """
-    Prüft, ob ein OperatorFlagCode in der countrycodes.json definiert ist,
+    Prüft, ob ein OperatorFlagCode in der icaocodes.json definiert ist,
     und gibt den entsprechenden Ländernamen und die Airline zurück.
     """
 
@@ -82,7 +82,7 @@ def get_country_name(operator_flag_code):
                         "airline": entry.get('airline', 'Unknown')
                     }
     except Exception as e:
-        logging.error(f"Error reading countrycodes.json: {e}")
+        logging.error(f"Error reading icaocodes.json: {e}")
     return {
         "country": "Unknown",
         "airline": "Unknown"
