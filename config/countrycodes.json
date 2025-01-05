@@ -1,6 +1,7 @@
 [
     {"code": "DLH", "name": "Germany", "airline": "Lufthansa"},
     {"code": "CLH", "name": "Germany", "airline": "Lufthansa CityLine"},
+    {"code": "LHX", "name": "Germany", "airline": "Lufthansa CityLine"},
     {"code": "BAW", "name": "United Kingdom", "airline": "British Airways"},
     {"code": "AAL", "name": "United States", "airline": "American Airlines"},
     {"code": "AFR", "name": "France", "airline": "Air France"},
