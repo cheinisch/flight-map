@@ -42,6 +42,41 @@ SOURCES = config['sources']
 # Flask-App erstellen
 app = Flask(__name__, static_folder='static')
 
+# JSON-Datei für Country Codes
+COUNTRY_CODES_FILE = os.path.join(os.getcwd(), 'config', 'countrycodes.json')
+
+# Route für Country Codes
+@app.route('/countrycode', methods=['GET'])
+def get_country_codes():
+    """
+    Gibt die countrycodes.json-Datei zurück.
+    """
+    if os.path.exists(COUNTRY_CODES_FILE):
+        try:
+            with open(COUNTRY_CODES_FILE, 'r') as file:
+                country_codes = json.load(file)
+            return jsonify(country_codes)
+        except Exception as e:
+            return jsonify({"error": f"Error reading countrycodes.json: {str(e)}"}), 500
+    else:
+        return jsonify({"error": "countrycodes.json not found"}), 404
+
+
+# Hilfsfunktion: Ländername basierend auf dem Code abrufen
+def get_country_name(operator_flag_code):
+    """
+    Prüft, ob ein OperatorFlagCode in der countrycodes.json definiert ist,
+    und gibt den entsprechenden Ländernamen zurück.
+    """
+    try:
+        if os.path.exists(COUNTRY_CODES_FILE):
+            with open(COUNTRY_CODES_FILE, 'r') as file:
+                country_codes = json.load(file)
+            return country_codes.get(operator_flag_code, None)
+    except Exception as e:
+        logging.error(f"Error reading countrycodes.json: {e}")
+    return None
+
 # Hilfsfunktion: Flugzeugdetails basierend auf ICAO abrufen
 def fetch_aircraft_details(icao_hex):
     api_url = f"https://hexdb.io/api/v1/aircraft/{icao_hex}"
@@ -49,11 +84,16 @@ def fetch_aircraft_details(icao_hex):
         response = requests.get(api_url, timeout=5)
         if response.status_code == 200:
             data = response.json()
+            operator_flag_code = data.get("OperatorFlagCode", "Unknown")
+            country_name = get_country_name(operator_flag_code)
+            # Füge den Ländernamen nur in den Details hinzu
+            country_details = f"{operator_flag_code} ({country_name})" if country_name else operator_flag_code
             return {
                 "tail_number": data.get("Registration", "Unknown"),
                 "model": data.get("Type", "Unknown"),
                 "manufacturer": data.get("Manufacturer", "Unknown"),
-                "country": data.get("OperatorFlagCode", "Unknown"),
+                "country": operator_flag_code,  # Nur den Code für die Tabelle
+                "country_details": country_details,  # Land + Code für die Details
                 "owner": data.get("RegisteredOwners", "Unknown"),
             }
     except Exception as e:
@@ -63,6 +103,7 @@ def fetch_aircraft_details(icao_hex):
         "model": "Unknown",
         "manufacturer": "Unknown",
         "country": "Unknown",
+        "country_details": "Unknown",
         "owner": "Unknown",
     }
 
