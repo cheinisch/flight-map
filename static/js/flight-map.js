@@ -200,8 +200,23 @@ async function initMap() {
     updatePlanesOnMap();
 }
 
+async function fetchSquawkColors() {
+    try {
+        const response = await fetch('/squawk');
+        if (!response.ok) {
+            console.error('Failed to fetch squawk colors:', response.statusText);
+            return;
+        }
+        squawkColors = await response.json();
+        console.log('Loaded squawk colors:', squawkColors); // Debugging
+    } catch (error) {
+        console.error('Error fetching squawk colors:', error);
+    }
+}
+
 initMap();
-setInterval(updatePlanesOnMap, 5000);
+setInterval(fetchSquawkColors, 2000);
+setInterval(updatePlanesOnMap, 2000);
 setInterval(fetchAircraftCounts, 2000);
 setInterval(fetchAircraftData, 2000);
 setInterval(updateTitle, 2000);
