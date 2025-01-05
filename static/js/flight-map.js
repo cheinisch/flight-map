@@ -167,7 +167,7 @@ function showAircraftDetails(aircraft) {
     console.log('Aircraft details:', aircraft);
 
     document.getElementById('aircraft_details_airline').textContent = aircraft.airline || '';
-    document.getElementById('aircraft_details_registration').textContent = aircraft.registration || '';
+    //document.getElementById('aircraft_details_registration').textContent = aircraft.registration || '';
     document.getElementById('aircraft_details_operator_flag').textContent = aircraft.icao_code_airline || 'N/A';
     document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_tailnumber-head').textContent = ': ' + aircraft.tail_number || 'N/A';
