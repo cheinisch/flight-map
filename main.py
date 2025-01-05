@@ -68,6 +68,9 @@ def get_country_name(operator_flag_code):
     Prüft, ob ein OperatorFlagCode in der countrycodes.json definiert ist,
     und gibt den entsprechenden Ländernamen zurück.
     """
+
+    detail = ''
+
     try:
         if os.path.exists(COUNTRY_CODES_FILE):
             with open(COUNTRY_CODES_FILE, 'r') as file:
@@ -75,7 +78,9 @@ def get_country_name(operator_flag_code):
             # Durchlaufe die Liste und suche den passenden Code
             for entry in country_codes:
                 if entry.get('code') == operator_flag_code:
-                    return entry.get('name')
+                    detail['country'] = entry.get('name')
+                    detail['airline'] = entry.get('airline')
+                    return detail
     except Exception as e:
         logging.error(f"Error reading countrycodes.json: {e}")
     return None
@@ -97,6 +102,7 @@ def fetch_aircraft_details(icao_hex):
                 "manufacturer": data.get("Manufacturer", "Unknown"),
                 "country": operator_flag_code,  # Nur den Code für die Tabelle
                 "country_details": country_details,  # Land + Code für die Details
+                "airline": airline,  # Land + Code für die Details
                 "owner": data.get("RegisteredOwners", "Unknown"),
             }
     except Exception as e:
@@ -233,7 +239,8 @@ def get_data():
                                 'model': details["model"],
                                 'manufacturer': details["manufacturer"],
                                 'country': details["country"],
-                                'country_details': details["country_details"],  # Hinzufügen
+                                'country_details': details["country_details"],
+                                'airline': details["airline"],
                                 'owner': details["owner"],
                                 'distance_km': distance_km,
                                 'distance_nm': distance_nm,
