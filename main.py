@@ -2,6 +2,7 @@ import yaml
 import json
 import time
 from flask import Flask, jsonify, request, render_template, send_file
+from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 from datetime import datetime
 import math
@@ -115,6 +116,27 @@ def update_aircraft_history(aircraft):
         writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'last_seen'])
         writer.writeheader()
         writer.writerows(updated_data)
+
+# Automatisches mitloggen
+
+def log_aircraft_history():
+    try:
+        response = requests.get('http://127.0.0.1:8080/data', timeout=10)
+        if response.status_code == 200:
+            aircraft_data = response.json()
+            for aircraft in aircraft_data:
+                update_aircraft_history(aircraft)
+            logging.info("Aircraft history updated.")
+        else:
+            logging.error(f"Failed to fetch data: HTTP {response.status_code}")
+    except Exception as e:
+        logging.error(f"Error logging aircraft history: {e}")
+
+# Scheduler starten
+scheduler = BackgroundScheduler()
+scheduler.add_job(log_aircraft_history, 'interval', seconds=60)
+scheduler.start()
+
 
 # Flugzeugdaten-Endpunkt
 @app.route('/data', methods=['GET'])
@@ -250,4 +272,11 @@ def index():
 
 # Anwendung starten
 if __name__ == '__main__':
+    # Hintergrund-Logging aktivieren
+    logging.info("Starting background aircraft logging...")
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(log_aircraft_history, 'interval', seconds=60)
+    scheduler.start()
+
+    # Flask-App starten
     app.run(host='0.0.0.0', port=8080, debug=False)
