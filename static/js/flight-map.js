@@ -1,6 +1,7 @@
 
 let map;
 let planeMarkers = {};
+let squawkColors = {}; // Globale Variable für Squawk-Farben
 
 function getIconForPlane(aircraft, isSelected = false) {
     // Standardfarben
