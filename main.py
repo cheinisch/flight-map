@@ -72,7 +72,10 @@ def get_country_name(operator_flag_code):
         if os.path.exists(COUNTRY_CODES_FILE):
             with open(COUNTRY_CODES_FILE, 'r') as file:
                 country_codes = json.load(file)
-            return country_codes.get(operator_flag_code, None)
+            # Durchlaufe die Liste und suche den passenden Code
+            for entry in country_codes:
+                if entry.get('code') == operator_flag_code:
+                    return entry.get('name')
     except Exception as e:
         logging.error(f"Error reading countrycodes.json: {e}")
     return None
