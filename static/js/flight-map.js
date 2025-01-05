@@ -212,14 +212,30 @@ async function fetchSquawkColors() {
     }
 }
 
+async function loadVersion() {
+    try {
+        const response = await fetch('/static/VERSION');
+        if (response.ok) {
+            const version = await response.text();
+            document.getElementById('version-info').textContent = `Version: ${version.trim()}`;
+        } else {
+            console.error('Failed to load version information.');
+        }
+    } catch (error) {
+        console.error('Error fetching version:', error);
+    }
+}
+
 async function checkForUpdate() {
-    const localVersion = await fetch('/static/VERSION').then(res => res.text());
-    const remoteVersion = await fetch('https://raw.githubusercontent.com/cheinisch/flight-map/main/VERSION').then(res => res.text());
-    
-    if (localVersion.trim() !== remoteVersion.trim()) {
-        document.getElementById('update-message').style.display = 'inline';
-    } else {
-        document.getElementById('update-message').style.display = 'none';
+    try {
+        const localVersion = await fetch('/static/VERSION').then(res => res.text());
+        const remoteVersion = await fetch('https://raw.githubusercontent.com/cheinisch/flight-map/main/VERSION').then(res => res.text());
+        
+        if (localVersion.trim() !== remoteVersion.trim()) {
+            document.getElementById('update-message').style.display = 'inline';
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error);
     }
 }
 
@@ -235,7 +251,8 @@ function runUpdateScript() {
         });
 }
 
-// Check for updates on page load
+// Lade die Versionsnummer und prüfe auf Updates
+loadVersion();
 checkForUpdate();
 
 initMap();

@@ -153,7 +153,8 @@
                 <!-- Footer -->
                 <footer class="uk-background-secondary uk-light" style="position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px; font-size: 12px; z-index: 1000;">
                     <span id="footer-message">&copy; 2025 Flight-Map</span> | 
-                    <span id="update-message"><a href="#" onclick="runUpdateScript()">Update now</a></span>
+                    <span id="version-info"></span> |
+                    <span id="update-message" style="display: none;"><a href="#" onclick="runUpdateScript()">Update now</a></span>
                 </footer>  
         </div>
         <script src="{{ url_for('static', filename='js/flight-map.js') }}"></script>

@@ -3,6 +3,7 @@ import json
 import time
 from flask import Flask, jsonify, request, render_template, send_file
 from apscheduler.schedulers.background import BackgroundScheduler
+from subprocess import Popen, PIPE
 import requests
 from datetime import datetime
 import math
@@ -192,8 +193,14 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(log_aircraft_history, 'interval', seconds=60)
 scheduler.start()
 
-
-from subprocess import Popen, PIPE
+@app.route('/static/VERSION', methods=['GET'])
+def get_version():
+    version_file = os.path.join(os.getcwd(), 'VERSION')
+    if os.path.exists(version_file):
+        with open(version_file, 'r') as file:
+            return file.read(), 200, {'Content-Type': 'text/plain'}
+    else:
+        return "Version file not found", 404
 
 @app.route('/run-update', methods=['POST'])
 def run_update():
