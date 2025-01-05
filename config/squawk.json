@@ -1,6 +1,5 @@
 [
-    {"squawk": "0020", "color": "grey"},
-    {"squawk": "1000", "color": "red"},
+    {"squawk": "0020", "color": "blue"},
     {"squawk": "7000", "color": "yellow"},
     {"squawk": "7500", "color": "red"},
     {"squawk": "7600", "color": "orange"},

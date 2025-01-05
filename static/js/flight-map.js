@@ -5,7 +5,7 @@ let squawkColors = {}; // Globale Variable für Squawk-Farben
 
 function getIconForPlane(aircraft, isSelected = false) {
     // Standardfarben
-    let baseColor = isSelected ? 'green' : (aircraft.seen > 20 ? 'lightcoral' : 'lightgreen');
+    let baseColor = isSelected ? 'lightgreen' : (aircraft.seen > 20 ? 'coral' : 'green');
 
     // Prüfen, ob der Squawk-Code in den geladenen Farben vorhanden ist
     if (aircraft.squawk && squawkColors[aircraft.squawk]) {
@@ -24,22 +24,6 @@ function getIconForPlane(aircraft, isSelected = false) {
         className: 'plane-icon',
         iconSize: [32, 32]
     });
-}
-
-function getColorForSquawk(aircraft) {
-    // Prüfen, ob der Squawk in der JSON definiert ist
-    if (squawkColors[aircraft.squawk]) {
-        return squawkColors[aircraft.squawk];
-    }
-
-    // Fallback: Basierend auf der Zeit seit der letzten Position
-    if (aircraft.seen > 20) {
-        return 'lightcoral'; // Hellrot (veraltet)
-    } else if (aircraft.seen > 10) {
-        return 'darkgreen'; // Hellgrün (weniger aktuell)
-    } else {
-        return 'green'; // Grün (aktuell)
-    }
 }
 
 async function updatePlanesOnMap() {
