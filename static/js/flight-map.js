@@ -212,6 +212,32 @@ async function fetchSquawkColors() {
     }
 }
 
+async function checkForUpdate() {
+    const localVersion = await fetch('/static/VERSION').then(res => res.text());
+    const remoteVersion = await fetch('https://raw.githubusercontent.com/cheinisch/flight-map/main/VERSION').then(res => res.text());
+    
+    if (localVersion.trim() !== remoteVersion.trim()) {
+        document.getElementById('update-message').style.display = 'inline';
+    } else {
+        document.getElementById('update-message').style.display = 'none';
+    }
+}
+
+function runUpdateScript() {
+    fetch('/run-update', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+        })
+        .catch(err => {
+            console.error('Update failed:', err);
+            alert('Update failed.');
+        });
+}
+
+// Check for updates on page load
+checkForUpdate();
+
 initMap();
 setInterval(fetchSquawkColors, 2000);
 setInterval(updatePlanesOnMap, 2000);
