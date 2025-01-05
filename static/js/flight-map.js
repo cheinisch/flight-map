@@ -163,7 +163,10 @@ function selectAircraft(aircraft) {
 }
 
 function showAircraftDetails(aircraft) {
-    document.getElementById('aircraft_details_country').textContent = aircraft.country_details|| 'N/A';
+
+    console.log('Aircraft details:', aircraft);
+
+    document.getElementById('aircraft_details_country').textContent = aircraft.country_details || 'N/A';
     document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_tailnumber-head').textContent = ': ' + aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_model').textContent = aircraft.model || 'N/A';
