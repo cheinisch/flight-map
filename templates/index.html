@@ -67,6 +67,10 @@
                     padding-left: 5px;
                     padding-right: 5px;
                 }
+                footer {
+                    position: static !important;
+                    margin-top: 20px;
+                }
             }
         </style>
     </head>
@@ -142,7 +146,9 @@
                             <!-- Dynamisch generierte Zeilen -->
                         </tbody>
                     </table>
-                    <div class="uk-position-bottom-right">Version</div>
+                    <footer class="uk-background-secondary uk-light" style="position: absolute; bottom: 0; width: 100%; text-align: center; padding: 10px; font-size: 12px;">
+                        <span id="footer-message">&copy; 2025 Flight-Map</span>
+                    </footer>
                 </div>        
         </div>
         <script src="{{ url_for('static', filename='js/flight-map.js') }}"></script>
