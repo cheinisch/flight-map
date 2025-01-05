@@ -214,9 +214,9 @@ def get_squawk():
             return jsonify({"error": f"Error reading squawk.json: {str(e)}"}), 500
     else:
         return jsonify({"error": "squawk.json not found"}), 404
-    
-@app.route('/squawk-user', methods=['GET'])
-def get_squawk():
+
+@app.route('/squawkuser', methods=['GET'])
+def get_squawk_user():
     squawk_file = os.path.join(os.getcwd(), 'config-user', 'squawk.json')
     if os.path.exists(squawk_file):
         try:
