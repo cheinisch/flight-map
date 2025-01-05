@@ -2,22 +2,8 @@
 let map;
 let planeMarkers = {};
 
-function getPlaneIcon(aircraft, isSelected = false) {
-    
-    // Prüfe auf Squawk 7X00
-    if (aircraft.squawk && aircraft.squawk.startsWith('7500')) {
-        color = 'yellow'; // Gelb für Squawk 7X00
-    } else if (aircraft.squawk && aircraft.squawk.startsWith('7600')) {
-        color = 'yellow'; // Gelb für Squawk 7X00
-    } else if (aircraft.squawk && aircraft.squawk.startsWith('7700')) {
-        color = 'yellow'; // Gelb für Squawk 7X00
-    } else {
-        color = isSelected
-            ? 'green' // Grün für ausgewählte Flugzeuge
-            : aircraft.seen > 20
-                ? 'lightcoral' // Rot für inaktive Flugzeuge (>20 Sekunden nicht gesehen)
-                : 'aquamarine'; // Standard
-    }
+function getIconForPlane(aircraft, isSelected = false) {
+    const color = isSelected ? 'blue' : getColorForSquawk(aircraft);
     const rotation = aircraft.track || 0; // Track-Winkel in Grad
     return L.divIcon({
         html: `
@@ -30,6 +16,22 @@ function getPlaneIcon(aircraft, isSelected = false) {
         iconSize: [24, 24],
         iconAnchor: [12, 12],
     });
+}
+
+function getColorForSquawk(aircraft) {
+    // Prüfen, ob der Squawk in der JSON definiert ist
+    if (squawkColors[aircraft.squawk]) {
+        return squawkColors[aircraft.squawk];
+    }
+
+    // Fallback: Basierend auf der Zeit seit der letzten Position
+    if (aircraft.seen > 20) {
+        return 'lightcoral'; // Hellrot (veraltet)
+    } else if (aircraft.seen > 10) {
+        return 'darkgreen'; // Hellgrün (weniger aktuell)
+    } else {
+        return 'green'; // Grün (aktuell)
+    }
 }
 
 async function updatePlanesOnMap() {
