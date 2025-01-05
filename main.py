@@ -169,6 +169,8 @@ def get_data():
                                 'distance_km': distance_km,
                                 'distance_nm': distance_nm,
                             }
+                            # Aktualisiere die Historie
+                            update_aircraft_history(latest_aircraft_data[icao])
         except Exception as e:
             logging.error(f"Fehler beim Abrufen der Daten von {receiver_ip}: {e}")
 
