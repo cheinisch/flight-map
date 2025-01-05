@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    height: 100vh; /* 100% der Bildschirmhöhe */
+    margin: 0;
+}
+#map {
+    width: 100%;
+    height: 100%; /* Volle Bildschirmhöhe */
+    min-height:400px;
+}
+.aircraft_data {
+    margin-top: 5px !important;
+}
+.aircraft_data_bottom {
+    border-bottom-color: azure;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}
+.mainrow{
+    height:100%;
+}
+
+.uk-table td{
+    padding:1px 12px;
+}
+
+.hidden {
+    display: none;
+}
+@media only screen and (max-width: 900px) {
+    .hide_mobile{
+        display: none;
+    }
+    body{
+        height: 100%;
+    }
+    #map {
+        width: 100%;
+        height: 400px;
+    }
+    .uk-grid {
+        margin-left: 0px;
+    }
+    .uk-grid > * {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
