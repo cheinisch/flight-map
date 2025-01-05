@@ -35,9 +35,19 @@ echo "Richte virtuelle Umgebung ein..."
 sudo -u "$USER" python3 -m venv "$INSTALL_DIR/venv"
 sudo -u "$USER" "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
-# Konfigurationsdatei erstellen
-echo "Erstelle Konfigurationsdatei..."
-cat <<EOF | sudo tee "$INSTALL_DIR/config.yaml"
+# Pfad zur Konfigurationsdatei
+CONFIG_FILE="$INSTALL_DIR/user-config/config.yaml"
+
+# Überprüfen, ob die Konfigurationsdatei bereits existiert
+if [ -f "$CONFIG_FILE" ]; then
+    echo "Konfigurationsdatei existiert bereits unter $CONFIG_FILE. Keine neue Datei wird erstellt."
+else
+    echo "Erstelle Konfigurationsdatei..."
+    # Sicherstellen, dass das Verzeichnis existiert
+    mkdir -p "$INSTALL_DIR/user-config"
+    
+    # Konfigurationsdatei erstellen
+    cat <<EOF | sudo tee "$CONFIG_FILE"
 port: $PORT
 position:
   lat: 50.0357
@@ -50,6 +60,9 @@ sources:
     ip: 10.0.5.10
     port: 30003
 EOF
+
+    echo "Konfigurationsdatei erstellt unter $CONFIG_FILE."
+fi
 
 # Systemd-Dienst erstellen
 echo "Erstelle Systemd-Dienst..."
