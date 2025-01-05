@@ -3,6 +3,7 @@
 # Konfiguration
 REPO_URL="https://github.com/cheinisch/flight-map.git"  # Ersetze mit dem tatsächlichen Repository
 INSTALL_DIR="/opt/flight-map"
+BACKUP_DIR="/opt/flight-map-backups"
 SERVICE_NAME="flight-map"
 USER="flightmapuser"
 PORT=8080
@@ -18,10 +19,12 @@ if ! id "$USER" &>/dev/null; then
     sudo useradd -m -s /bin/bash "$USER"
 fi
 
-# Projektverzeichnis erstellen
-echo "Erstelle Installationsverzeichnis..."
+# Installations- und Backup-Verzeichnisse erstellen
+echo "Erstelle Installations- und Backup-Verzeichnisse..."
 sudo mkdir -p "$INSTALL_DIR"
+sudo mkdir -p "$BACKUP_DIR"
 sudo chown -R "$USER:$USER" "$INSTALL_DIR"
+sudo chown -R "$USER:$USER" "$BACKUP_DIR"
 
 # Projekt herunterladen
 echo "Lade Projekt von GitHub herunter..."
@@ -104,5 +107,8 @@ EOF
 sudo ln -sf "/etc/nginx/sites-available/$SERVICE_NAME" "/etc/nginx/sites-enabled/"
 sudo systemctl restart nginx
 
+# Server-IP abrufen
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
 # Fertig
-echo "Installation abgeschlossen! Zugriff unter http://<server-ip>"
+echo "Installation abgeschlossen! Zugriff unter http://$SERVER_IP:$PORT"
