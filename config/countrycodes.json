@@ -1,8 +1,22 @@
 [
     {"code": "DLH", "name": "Germany"},
+    {"code": "CLH", "name": "Germany"},
     {"code": "BAW", "name": "United Kingdom"},
     {"code": "AAL", "name": "United States"},
     {"code": "AFR", "name": "France"},
     {"code": "KLM", "name": "Netherlands"},
-    {"code": "AUA", "name": "Austria"}
+    {"code": "AUA", "name": "Austria"},
+    {"code": "SWR", "name": "Switzerland"},
+    {"code": "QFA", "name": "Australia"},
+    {"code": "ANA", "name": "Japan"},
+    {"code": "UAL", "name": "United States"},
+    {"code": "DLR", "name": "Germany"},
+    {"code": "IBE", "name": "Spain"},
+    {"code": "RYR", "name": "Ireland"},
+    {"code": "EZY", "name": "United Kingdom"},
+    {"code": "THY", "name": "Turkey"},
+    {"code": "SAS", "name": "Scandinavia"},
+    {"code": "LHG", "name": "Germany"},
+    {"code": "LOT", "name": "Poland"},
+    {"code": "FIN", "name": "Finland"}
 ]
