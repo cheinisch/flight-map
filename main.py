@@ -26,7 +26,7 @@ POSITION = config['position']
 SOURCES = config['sources']
 
 # Flask-App erstellen
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Hilfsfunktion: Flugzeugdetails basierend auf ICAO abrufen
 def fetch_aircraft_details(icao_hex):
