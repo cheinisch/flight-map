@@ -79,7 +79,8 @@ def get_icao_name(operator_flag_code):
                 if entry.get('code') == operator_flag_code:
                     return {
                         "icao": entry.get('name', 'Unknown'),
-                        "airline": entry.get('airline', 'Unknown')
+                        "airline": entry.get('airline', 'Unknown'),
+                        "country": entry.get('country', 'Unknown'),
                     }
     except Exception as e:
         logging.error(f"Error reading icaocodes.json: {e}")
@@ -98,7 +99,7 @@ def fetch_aircraft_details(icao_hex):
             operator_flag_code = data.get("OperatorFlagCode", "Unknown")
             icao_info = get_icao_name(operator_flag_code)
             # Füge den Ländernamen und Airline-Namen nur in den Details hinzu
-            icao_details = f"{operator_flag_code} ({icao_info['icao']})" if icao_info['icao'] != "Unknown" else operator_flag_code
+            icao_details = f"{operator_flag_code} ({icao_info['country']}, {icao_info['airline']})" if icao_info['airline'] != "Unknown" else operator_flag_code
             return {
                 "tail_number": data.get("Registration", "Unknown"),
                 "model": data.get("Type", "Unknown"),
