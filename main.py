@@ -44,19 +44,19 @@ SOURCES = config['sources']
 app = Flask(__name__, static_folder='static')
 
 # JSON-Datei für Country Codes
-COUNTRY_CODES_FILE = os.path.join(os.getcwd(), 'config', 'icaocodes.json')
+ICAO_CODES_FILE = os.path.join(os.getcwd(), 'config', 'icaocodes.json')
 
 # Route für Country Codes
-@app.route('/countrycode', methods=['GET'])
-def get_country_codes():
+@app.route('/icaocode', methods=['GET'])
+def get_icao_codes():
     """
     Gibt die icaocodes.json-Datei zurück.
     """
-    if os.path.exists(COUNTRY_CODES_FILE):
+    if os.path.exists(ICAO_CODES_FILE):
         try:
-            with open(COUNTRY_CODES_FILE, 'r') as file:
-                country_codes = json.load(file)
-            return jsonify(country_codes)
+            with open(ICAO_CODES_FILE, 'r') as file:
+                icao_codes = json.load(file)
+            return jsonify(icao_codes)
         except Exception as e:
             return jsonify({"error": f"Error reading icaocodes.json: {str(e)}"}), 500
     else:
@@ -64,27 +64,27 @@ def get_country_codes():
 
 
 # Hilfsfunktion: Ländername basierend auf dem Code abrufen
-def get_country_name(operator_flag_code):
+def get_icao_name(operator_flag_code):
     """
     Prüft, ob ein OperatorFlagCode in der icaocodes.json definiert ist,
     und gibt den entsprechenden Ländernamen und die Airline zurück.
     """
 
     try:
-        if os.path.exists(COUNTRY_CODES_FILE):
-            with open(COUNTRY_CODES_FILE, 'r') as file:
-                country_codes = json.load(file)
+        if os.path.exists(ICAO_CODES_FILE):
+            with open(ICAO_CODES_FILE, 'r') as file:
+                icao_codes = json.load(file)
             # Durchlaufe die Liste und suche den passenden Code
-            for entry in country_codes:
+            for entry in icao_codes:
                 if entry.get('code') == operator_flag_code:
                     return {
-                        "country": entry.get('name', 'Unknown'),
+                        "icao": entry.get('name', 'Unknown'),
                         "airline": entry.get('airline', 'Unknown')
                     }
     except Exception as e:
         logging.error(f"Error reading icaocodes.json: {e}")
     return {
-        "country": "Unknown",
+        "icao": "Unknown",
         "airline": "Unknown"
     }
 
@@ -96,16 +96,16 @@ def fetch_aircraft_details(icao_hex):
         if response.status_code == 200:
             data = response.json()
             operator_flag_code = data.get("OperatorFlagCode", "Unknown")
-            country_info = get_country_name(operator_flag_code)
+            icao_info = get_icao_name(operator_flag_code)
             # Füge den Ländernamen und Airline-Namen nur in den Details hinzu
-            country_details = f"{operator_flag_code} ({country_info['country']})" if country_info['country'] != "Unknown" else operator_flag_code
+            icao_details = f"{operator_flag_code} ({icao_info['icao']})" if icao_info['icao'] != "Unknown" else operator_flag_code
             return {
                 "tail_number": data.get("Registration", "Unknown"),
                 "model": data.get("Type", "Unknown"),
                 "manufacturer": data.get("Manufacturer", "Unknown"),
-                "country": operator_flag_code,  # Nur den Code für die Tabelle
-                "country_details": country_details,  # Land + Code für die Details
-                "airline": country_info["airline"],  # Airline
+                "icao_operator_flag": operator_flag_code,  # Nur den Code für die Tabelle
+                "icao_code_airline": icao_details,  # Land + Code für die Details
+                "airline": icao_info["airline"],  # Airline
                 "owner": data.get("RegisteredOwners", "Unknown"),
             }
     except Exception as e:
@@ -114,8 +114,8 @@ def fetch_aircraft_details(icao_hex):
         "tail_number": "Unknown",
         "model": "Unknown",
         "manufacturer": "Unknown",
-        "country": "Unknown",
-        "country_details": "Unknown",
+        "icao_operator_flag": "Unknown",
+        "icao_code_airline": "Unknown",
         "airline": "Unknown",
         "owner": "Unknown",
     }
@@ -262,8 +262,8 @@ def get_data():
                                 'tail_number': details["tail_number"],
                                 'model': details["model"],
                                 'manufacturer': details["manufacturer"],
-                                'country': details["country"],
-                                'country_details': details["country_details"],
+                                'icao_operator_flag': details["icao_operator_flag"],
+                                'icao_code_airline': details["icao_code_airline"],
                                 'airline': details["airline"],
                                 'owner': details["owner"],
                                 'distance_km': distance_km,

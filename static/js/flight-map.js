@@ -102,7 +102,7 @@ async function fetchAircraftData() {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${aircraft.icao || 'N/A'}</td>
-                        <td class="hide_mobile">${aircraft.country || ''}</td>
+                        <td class="hide_mobile">${aircraft.icao_operator_flag || ''}</td>
                         <td>${aircraft.flight || ''}</td>
                         <td>${aircraft.altitude ? aircraft.altitude + ' ft' : 'N/A'}</td>
                         <td>${aircraft.speed ? aircraft.speed + ' kt' : 'N/A'}</td>
@@ -167,7 +167,7 @@ function showAircraftDetails(aircraft) {
     console.log('Aircraft details:', aircraft);
 
     document.getElementById('aircraft_details_airline').textContent = aircraft.airline || '';
-    document.getElementById('aircraft_details_country').textContent = aircraft.country_details || 'N/A';
+    document.getElementById('aircraft_details_operator_flag').textContent = aircraft.icao_code_airline || 'N/A';
     document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_tailnumber-head').textContent = ': ' + aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_model').textContent = aircraft.model || 'N/A';
