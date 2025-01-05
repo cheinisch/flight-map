@@ -1,0 +1,6 @@
+[
+    {"squawk": "7000", "color": "yellow"},
+    {"squawk": "7500", "color": "red"},
+    {"squawk": "7600", "color": "orange"},
+    {"squawk": "7700", "color": "purple"}
+]
