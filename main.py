@@ -28,11 +28,13 @@ if not os.path.exists(HISTORY_FILE):
         writer.writeheader()
 
 # Konfiguration laden
-def load_config(config_path):
+def load_config(config_path='user-config/config.yaml'):
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file not found at {config_path}")
     with open(config_path, 'r') as file:
         return yaml.safe_load(file)
 
-config = load_config('config.yaml')
+config = load_config()
 PORT = config['port']
 POSITION = config['position']
 SOURCES = config['sources']
