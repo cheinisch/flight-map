@@ -166,6 +166,7 @@ function showAircraftDetails(aircraft) {
 
     console.log('Aircraft details:', aircraft);
 
+    document.getElementById('aircraft_details_airline').textContent = aircraft.airline || '';
     document.getElementById('aircraft_details_country').textContent = aircraft.country_details || 'N/A';
     document.getElementById('aircraft_details_tailnumber').textContent = aircraft.tail_number || 'N/A';
     document.getElementById('aircraft_details_tailnumber-head').textContent = ': ' + aircraft.tail_number || 'N/A';
