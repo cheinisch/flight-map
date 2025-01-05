@@ -233,6 +233,7 @@ def get_data():
                                 'model': details["model"],
                                 'manufacturer': details["manufacturer"],
                                 'country': details["country"],
+                                'country_details': details["country_details"],  # Hinzufügen
                                 'owner': details["owner"],
                                 'distance_km': distance_km,
                                 'distance_nm': distance_nm,
