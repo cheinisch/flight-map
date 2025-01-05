@@ -203,6 +203,28 @@ def get_history():
         return jsonify(history_data)
     except Exception as e:
         return jsonify({'error': f"Error loading history: {e}"}), 500
+    
+@app.route('/squawk', methods=['GET'])
+def get_squawk():
+    squawk_file = os.path.join(os.getcwd(), 'config', 'squawk.json')
+    if os.path.exists(squawk_file):
+        try:
+            return send_file(squawk_file, mimetype='application/json')
+        except Exception as e:
+            return jsonify({"error": f"Error reading squawk.json: {str(e)}"}), 500
+    else:
+        return jsonify({"error": "squawk.json not found"}), 404
+    
+@app.route('/squawk-user', methods=['GET'])
+def get_squawk():
+    squawk_file = os.path.join(os.getcwd(), 'config-user', 'squawk.json')
+    if os.path.exists(squawk_file):
+        try:
+            return send_file(squawk_file, mimetype='application/json')
+        except Exception as e:
+            return jsonify({"error": f"Error reading squawk.json: {str(e)}"}), 500
+    else:
+        return jsonify({"error": "squawk.json not found"}), 404
 
 @app.route('/')
 def index():
