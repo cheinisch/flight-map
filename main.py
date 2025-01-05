@@ -13,7 +13,18 @@ import csv
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
 
-HISTORY_FILE = 'aircraft_history.csv'
+# Verzeichnis für benutzerspezifische Konfigurationen
+USER_CONFIG_DIR = os.path.join(os.getcwd(), 'user-config')
+HISTORY_FILE = os.path.join(USER_CONFIG_DIR, 'aircraft_history.csv')
+
+# Stelle sicher, dass der Ordner user-config existiert
+os.makedirs(USER_CONFIG_DIR, exist_ok=True)
+
+# Stelle sicher, dass die Datei existiert, falls sie nicht existiert
+if not os.path.exists(HISTORY_FILE):
+    with open(HISTORY_FILE, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'last_seen'])
+        writer.writeheader()
 
 # Konfiguration laden
 def load_config(config_path):
@@ -67,14 +78,17 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 # Hilfsfunktion History
 def update_aircraft_history(aircraft):
     """
-    Aktualisiert die Flugzeughistorie in der CSV-Datei.
+    Aktualisiert die Flugzeughistorie in der CSV-Datei im Ordner 'user-config'.
     """
     updated_data = []
     icao_found = False
-    with open(HISTORY_FILE, 'r') as file:
-        reader = csv.DictReader(file)
-        updated_data = list(reader)
-    
+
+    # Lade vorhandene Einträge, wenn die Datei existiert
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, 'r') as file:
+            reader = csv.DictReader(file)
+            updated_data = list(reader)
+
     # Überprüfe, ob das Flugzeug bereits vorhanden ist
     for record in updated_data:
         if record['icao'] == aircraft['icao']:
@@ -85,7 +99,7 @@ def update_aircraft_history(aircraft):
                 'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
             icao_found = True
-    
+
     # Falls nicht vorhanden, füge das Flugzeug hinzu
     if not icao_found:
         updated_data.append({
@@ -195,12 +209,14 @@ def get_history():
     Gibt die Flugzeughistorie als JSON zurück.
     """
     try:
-        with open(HISTORY_FILE, 'r') as file:
-            reader = csv.DictReader(file)
-            history_data = list(reader)
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, 'r') as file:
+                reader = csv.DictReader(file)
+                history_data = list(reader)
 
-        # Konvertiere die CSV-Daten in ein JSON-kompatibles Format
-        return jsonify(history_data)
+            return jsonify(history_data)
+        else:
+            return jsonify({'error': "History file not found"}), 404
     except Exception as e:
         return jsonify({'error': f"Error loading history: {e}"}), 500
     
