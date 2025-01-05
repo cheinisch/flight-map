@@ -3,18 +3,25 @@ let map;
 let planeMarkers = {};
 
 function getIconForPlane(aircraft, isSelected = false) {
-    const color = isSelected ? 'blue' : getColorForSquawk(aircraft);
-    const rotation = aircraft.track || 0; // Track-Winkel in Grad
+    // Standardfarben
+    let baseColor = isSelected ? 'green' : (aircraft.seen > 20 ? 'lightcoral' : 'lightgreen');
+
+    // Prüfen, ob der Squawk-Code in den geladenen Farben vorhanden ist
+    if (aircraft.squawk && squawkColors[aircraft.squawk]) {
+        baseColor = squawkColors[aircraft.squawk];
+    }
+
+    const rotation = aircraft.track || 0;
     return L.divIcon({
         html: `
-            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -256 1792 1792" style="transform: rotate(${rotation}deg);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1792 1792" style="transform: rotate(${rotation}deg);">
                 <g transform="matrix(0.70710678,-0.70710678,-0.70710678,-0.70710678,898.14773,1786.3393)">
-                    <path d="m 1397,1324 q 0,-87 -149,-236 l -240,-240 143,-746 1,-6 q 0,-14 -9,-23 L 1079,9 q -9,-9 -23,-9 -21,0 -29,18 L 753,593 508,348 Q 576,110 576,96 576,82 567,73 L 503,9 Q 494,0 480,0 462,0 452,16 L 297,296 17,451 q -17,9 -17,28 0,14 9,23 l 64,65 q 9,9 23,9 14,0 252,-68 L 593,753 18,1027 q -18,8 -18,29 0,14 9,23 l 64,64 q 9,9 23,9 4,0 6,-1 l 746,-143 240,240 q 149,149 236,149 32,0 52.5,-20.5 20.5,-20.5 20.5,-52.5 z" fill="${color}"/>
+                    <path fill="${baseColor}" d="m 1397,1324 q 0,-87 -149,-236 l -240,-240 143,-746 1,-6 q 0,-14 -9,-23 L 1079,9 q -9,-9 -23,-9 -21,0 -29,18 L 753,593 508,348 Q 576,110 576,96 576,82 567,73 L 503,9 Q 494,0 480,0 462,0 452,16 L 297,296 17,451 q -17,9 -17,28 0,14 9,23 l 64,65 q 9,9 23,9 14,0 252,-68 L 593,753 18,1027 q -18,8 -18,29 0,14 9,23 l 64,64 q 9,9 23,9 4,0 6,-1 l 746,-143 240,240 q 149,149 236,149 32,0 52.5,-20.5 20.5,-20.5 20.5,-52.5 z"/>
                 </g>
-            </svg>`,
+            </svg>
+        `,
         className: 'plane-icon',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        iconSize: [32, 32]
     });
 }
 
@@ -54,9 +61,9 @@ async function updatePlanesOnMap() {
             if (planeMarkers[aircraft.icao]) {
                 planeMarkers[aircraft.icao]
                     .setLatLng([aircraft.lat, aircraft.lon])
-                    .setIcon(getPlaneIcon(aircraft, isSelected));
+                    .setIcon(getIconForPlane(aircraft, isSelected));
             } else {
-                const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getPlaneIcon(aircraft, isSelected) }).addTo(map);
+                const marker = L.marker([aircraft.lat, aircraft.lon], { icon: getIconForPlane(aircraft, isSelected) }).addTo(map);
                 marker.on('click', () => selectAircraft(aircraft));
                 planeMarkers[aircraft.icao] = marker;
             }
