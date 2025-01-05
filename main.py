@@ -193,6 +193,20 @@ scheduler.add_job(log_aircraft_history, 'interval', seconds=60)
 scheduler.start()
 
 
+from subprocess import Popen, PIPE
+
+@app.route('/run-update', methods=['POST'])
+def run_update():
+    try:
+        process = Popen(['bash', './update.sh'], cwd=os.getcwd(), stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        if process.returncode == 0:
+            return jsonify({'message': 'Update completed successfully!'})
+        else:
+            return jsonify({'message': f'Update failed: {stderr.decode("utf-8")}'})
+    except Exception as e:
+        return jsonify({'message': f'Error running update: {str(e)}'}), 500
+
 # Flugzeugdaten-Endpunkt
 @app.route('/data', methods=['GET'])
 def get_data():
