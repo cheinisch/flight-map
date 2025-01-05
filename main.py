@@ -6,9 +6,14 @@ import requests
 from datetime import datetime
 import math
 import logging
+import os
+import csv
 
 # Logging-Konfiguration
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
+
+
+HISTORY_FILE = 'aircraft_history.csv'
 
 # Konfiguration laden
 def load_config(config_path):
