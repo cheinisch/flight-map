@@ -25,7 +25,7 @@ os.makedirs(USER_CONFIG_DIR, exist_ok=True)
 # Stelle sicher, dass die Datei existiert, falls sie nicht existiert
 if not os.path.exists(HISTORY_FILE):
     with open(HISTORY_FILE, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'last_seen'])
+        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'operator_flag', 'last_seen'])
         writer.writeheader()
 
 # Konfiguration laden
@@ -164,6 +164,7 @@ def update_aircraft_history(aircraft):
                 'tail_number': aircraft.get('tail_number', 'Unknown'),
                 'manufacturer': aircraft.get('manufacturer', 'Unknown'),
                 'model': aircraft.get('model', 'Unknown'),
+                'operator_flag': aircraft.get('icao_operator_flag', 'Unknown'),
                 'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
             icao_found = True
@@ -175,12 +176,13 @@ def update_aircraft_history(aircraft):
             'tail_number': aircraft.get('tail_number', 'Unknown'),
             'manufacturer': aircraft.get('manufacturer', 'Unknown'),
             'model': aircraft.get('model', 'Unknown'),
+            'operator_flag': aircraft.get('icao_operator_flag', 'Unknown'),
             'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
 
     # Schreibe die aktualisierte Liste zurück in die Datei
     with open(HISTORY_FILE, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'last_seen'])
+        writer = csv.DictWriter(file, fieldnames=['icao', 'tail_number', 'manufacturer', 'model', 'operator_flag', 'last_seen'])
         writer.writeheader()
         writer.writerows(updated_data)
 
