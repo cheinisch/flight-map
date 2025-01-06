@@ -49,5 +49,6 @@
     {"code": "AAR", "country": "South Korea", "airline": "Asiana Airlines"},
     {"code": "KAL", "country": "South Korea", "airline": "Korean Air"},
     {"code": "PIA", "country": "Pakistan", "airline": "Pakistan International Airlines"},
-    {"code": "DAL", "country": "United States", "airline": "Delta Air Lines"}
+    {"code": "DAL", "country": "United States", "airline": "Delta Air Lines"},
+    {"code": "WUK", "country": "United Kingdom", "airline": "Wizz Air UK"}
 ]
