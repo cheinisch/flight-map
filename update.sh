@@ -18,17 +18,28 @@ if [ ! -d "$BACKUP_DIR" ]; then
 fi
 
 # Backup der user-config
-echo "Erstelle Backup der user-config unter $BACKUP_FILE..."
-if tar -czf "$BACKUP_FILE" -C "$INSTALL_DIR" user-config; then
-    echo "Backup erfolgreich: $BACKUP_FILE"
+if [ -d "$INSTALL_DIR/user-config" ]; then
+    echo "Erstelle Backup der user-config unter $BACKUP_FILE..."
+    if tar -czf "$BACKUP_FILE" -C "$INSTALL_DIR" user-config; then
+        echo "Backup erfolgreich: $BACKUP_FILE"
+    else
+        echo "Fehler beim Erstellen des Backups!" >&2
+        exit 1
+    fi
 else
-    echo "Fehler beim Erstellen des Backups!" >&2
-    exit 1
+    echo "Kein user-config-Verzeichnis vorhanden. Überspringe Backup."
 fi
 
-# Alte Dateien entfernen außer user-config und update.sh
-echo "Entferne alte Dateien außer user-config und update.sh..."
-find "$INSTALL_DIR" -mindepth 1 ! -name 'update.sh' ! -name 'user-config' -exec rm -rf {} +
+# Temporäres Backup des user-config-Verzeichnisses vor dem Entfernen
+TEMP_BACKUP_DIR=$(mktemp -d)
+if [ -d "$INSTALL_DIR/user-config" ]; then
+    echo "Sichere user-config temporär..."
+    cp -r "$INSTALL_DIR/user-config" "$TEMP_BACKUP_DIR" || { echo "Fehler beim Sichern von user-config."; exit 1; }
+fi
+
+# Alte Dateien entfernen außer update.sh
+echo "Entferne alte Dateien außer update.sh..."
+find "$INSTALL_DIR" -mindepth 1 ! -name 'update.sh' -exec rm -rf {} +
 
 # Repository aktualisieren
 echo "Klone das Repository neu..."
@@ -36,6 +47,15 @@ git clone "$REPO_URL" temp_repo || { echo "Fehler beim Klonen des Repositories."
 mv temp_repo/* "$INSTALL_DIR"
 mv temp_repo/.* "$INSTALL_DIR" 2>/dev/null || true
 rmdir temp_repo
+
+# Wiederherstellen des user-config-Verzeichnisses
+if [ -d "$TEMP_BACKUP_DIR/user-config" ]; then
+    echo "Stelle user-config wieder her..."
+    mv "$TEMP_BACKUP_DIR/user-config" "$INSTALL_DIR/"
+else
+    echo "Kein user-config-Backup gefunden. Überspringe Wiederherstellung."
+fi
+rm -rf "$TEMP_BACKUP_DIR"
 
 # Virtuelle Umgebung neu einrichten
 echo "Richte virtuelle Umgebung ein..."
