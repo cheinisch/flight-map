@@ -7,7 +7,8 @@ BACKUP_DIR="/opt/flight-map-backups"
 SERVICE_NAME="flight-map"
 USER="flightmapuser"
 PORT=8080
-HISTORY_FILE="$INSTALL_DIR/user-config/aircraft_history.csv"
+USER_CONFIG_DIR="$INSTALL_DIR/user-config"
+USER_CONFIG_BACKUP="$BACKUP_DIR/user-config_backup"
 
 # Voraussetzungen prüfen
 echo "Prüfe Voraussetzungen..."
@@ -27,12 +28,25 @@ sudo mkdir -p "$BACKUP_DIR"
 sudo chown -R "$USER:$USER" "$INSTALL_DIR"
 sudo chown -R "$USER:$USER" "$BACKUP_DIR"
 
+# Sichern des user-config-Verzeichnisses
+if [ -d "$USER_CONFIG_DIR" ]; then
+    echo "Sichere user-config-Verzeichnis..."
+    sudo cp -r "$USER_CONFIG_DIR" "$USER_CONFIG_BACKUP"
+fi
+
 # Projekt herunterladen
 echo "Lade Projekt von GitHub herunter..."
 sudo -u "$USER" git clone "$REPO_URL" "$INSTALL_DIR" || {
     echo "Projekt bereits vorhanden, aktualisiere Repository..."
     cd "$INSTALL_DIR" && sudo -u "$USER" git pull
 }
+
+# Wiederherstellung des user-config-Verzeichnisses
+if [ -d "$USER_CONFIG_BACKUP" ]; then
+    echo "Stelle user-config-Verzeichnis wieder her..."
+    sudo cp -r "$USER_CONFIG_BACKUP" "$USER_CONFIG_DIR"
+    sudo rm -rf "$USER_CONFIG_BACKUP"
+fi
 
 # Virtuelle Umgebung erstellen und Abhängigkeiten installieren
 echo "Richte virtuelle Umgebung ein..."
@@ -47,7 +61,6 @@ if [ -f "$CONFIG_FILE" ]; then
     echo "Konfigurationsdatei existiert bereits unter $CONFIG_FILE. Keine neue Datei wird erstellt."
 else
     echo "Erstelle Konfigurationsdatei..."
-    # Sicherstellen, dass das Verzeichnis existiert
     mkdir -p "$INSTALL_DIR/user-config"
     
     # Konfigurationsdatei erstellen
@@ -64,20 +77,7 @@ sources:
     ip: 10.0.5.10
     port: 30003
 EOF
-
     echo "Konfigurationsdatei erstellt unter $CONFIG_FILE."
-fi
-
-# Prüfen, ob die History-Datei existiert
-if [ -f "$HISTORY_FILE" ]; then
-    echo "History-Datei existiert bereits unter $HISTORY_FILE. Keine neue Datei wird erstellt."
-else
-    echo "Erstelle History-Datei..."
-    mkdir -p "$(dirname "$HISTORY_FILE")"
-    cat <<EOF | sudo tee "$HISTORY_FILE"
-icao,tail_number,manufacturer,model,last_seen
-EOF
-    echo "History-Datei erstellt unter $HISTORY_FILE."
 fi
 
 # Systemd-Dienst erstellen
